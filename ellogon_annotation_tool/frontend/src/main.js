@@ -26,5 +26,8 @@ Vue.component("button-spinner", ButtonSpinner);
 new Vue({
   router,
   store,
-  render: h => h(App)
+  //render: h => h(App)
+  components: {
+    'django': App
+  }
 }).$mount("#app");
