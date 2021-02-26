@@ -120,7 +120,8 @@ class ResetPassword(APIView):
            password = CustomUser.objects.make_random_password()
            user.set_password(password)
            user.save()
-           content = {"user": user.username, "password": password}
+           content = {"user": user.username, "password": password,
+                      "ellogon_logo": request.build_absolute_uri('/static/frontend/images/EllogonCyan.png')}
            reset_alert = EmailAlert(email, user.username, content)
            reset_alert.send_resetpassword_email()
            return Response(data={"code": 1}, status=status.HTTP_200_OK)
