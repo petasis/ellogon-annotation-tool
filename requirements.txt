@@ -4,3 +4,7 @@ markdown
 django-filter
 django-webpack-loader
 mysqlclient
+djangorestframework-simplejwt
+simplejwt
+requests
+six
