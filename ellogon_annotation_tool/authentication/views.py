@@ -49,7 +49,7 @@ class CustomUserCreate(APIView):
                   activation_link = request.build_absolute_uri(link)
                   #print(activation_link)
                   content = {"user": user.username, "link": activation_link,
-                           "ellogon_logo": request.build_absolute_uri('static/frontend/images/EllogonCyan.png')}
+                             "ellogon_logo": request.build_absolute_uri('/static/frontend/images/EllogonCyan.png')}
                   activation_alert = EmailAlert(request.data['email'], request.data["username"], content)
                   activation_alert.send_activation_email()
                   return Response(json, status=status.HTTP_201_CREATED)
