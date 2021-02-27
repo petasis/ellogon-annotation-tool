@@ -62,6 +62,7 @@ db.sqlite3
 db.sqlite3-journal
 my.cnf
 email_config.json
+ellogon_annotation_tool/static/
 
 # Flask stuff:
 instance/

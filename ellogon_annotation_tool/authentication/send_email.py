@@ -33,10 +33,10 @@ class EmailAlert():
     def send_activation_email(self):
         subject   = settings.EMAIL_USER_ACTIVATION_SUBJECT.format(**self.content)
         text      = settings.EMAIL_USER_ACTIVATION_BODY.format(**self.content)
-        return self.send_email("frontend/activation.html", subject, text, self.content)
+        return self.send_email("frontend/user_activation.html", subject, text, self.content)
 
 
     def send_resetpassword_email(self):
         subject   = settings.EMAIL_USER_RESET_SUBJECT.format(**self.content)
         text      = settings.EMAIL_USER_RESET_BODY.format(**self.content)
-        return self.send_email("frontend/reset_password.html", subject, text, self.content)
+        return self.send_email("frontend/user_reset_password.html", subject, text, self.content)

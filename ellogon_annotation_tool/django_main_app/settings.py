@@ -174,6 +174,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 STATIC_URL = '/static/'
+#STATICFILES_DIRS = (
+#    os.path.join(BASE_DIR, 'static'),
+#)
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 # Custom user model
 AUTH_USER_MODEL = "authentication.CustomUser"
@@ -187,7 +191,7 @@ vars().update(EMAIL_CONFIG)
 DEFAULT_FROM_EMAIL              = env('DEFAULT_FROM_EMAIL')
 DEFAULT_FROM_EMAIL_NO_REPLY     = env('DEFAULT_FROM_EMAIL_NO_REPLY')
 EMAIL_APP_NAME                  = "Ellogon Annotation Platform"
-EMAIL_USER_ACTIVATION_SUBJECT   = "{EMAIL_APP_NAME}: Account Activation",
-EMAIL_USER_ACTIVATION_BODY      = "This is an automatic email from {sender}. Please don't reply",
-EMAIL_USER_RESET_SUBJECT        = "{EMAIL_APP_NAME}: Account Password Reset",
-EMAIL_USER_RESET_BODY           = "This is an automatic email from {sender}. Please don't reply"
+EMAIL_USER_ACTIVATION_SUBJECT   = "{EMAIL_APP_NAME}: Account Activation for User: \"{user}\""
+EMAIL_USER_ACTIVATION_BODY      = "This is an automatic email from {sender}. Please do not reply to this e-mail!"
+EMAIL_USER_RESET_SUBJECT        = "{EMAIL_APP_NAME}: Account Password Reset for User: \"{user}\""
+EMAIL_USER_RESET_BODY           = "This is an automatic email from {sender}. Please do not reply to this e-mail!"

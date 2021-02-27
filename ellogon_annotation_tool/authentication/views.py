@@ -31,7 +31,8 @@ class CustomUserCreate(APIView):
     authentication_classes = ()
 
     def post(self, request, format='json'):
-        # print(request.data['email']+","+request.data["username"])
+        # print('email:', request.data['email'], ", username:", request.data["username"],
+        #       ', password:', request.data["password"])
         # return Response(request.data, status=status.HTTP_201_CREATED)
         ## TODO: protect on error!
         serializer = CustomUserSerializer(data=request.data)
@@ -48,8 +49,9 @@ class CustomUserCreate(APIView):
                   link    = reverse('user_activate', kwargs={'uidb64': uidb64, 'token': token})
                   activation_link = request.build_absolute_uri(link)
                   #print(activation_link)
-                  content = {"user": user.username, "link": activation_link,
-                             "ellogon_logo": request.build_absolute_uri('/static/frontend/images/EllogonCyan.png')}
+                  content = {"user": user.username, "link": activation_link,  "email":request.data['email'],
+                             "baseurl":request.build_absolute_uri("/")[:-1],
+                             "ellogon_logo": request.build_absolute_uri('/static/frontend/images/EllogonLogo.svg')}
                   activation_alert = EmailAlert(request.data['email'], request.data["username"], content)
                   activation_alert.send_activation_email()
                   return Response(json, status=status.HTTP_201_CREATED)
@@ -120,8 +122,9 @@ class ResetPassword(APIView):
            password = CustomUser.objects.make_random_password()
            user.set_password(password)
            user.save()
-           content = {"user": user.username, "password": password,
-                      "ellogon_logo": request.build_absolute_uri('/static/frontend/images/EllogonCyan.png')}
+           content = {"user": user.username, "password": password, "email":email,
+                      "baseurl":request.build_absolute_uri("/")[:-1],
+                      "ellogon_logo": request.build_absolute_uri('/static/frontend/images/EllogonLogo.svg')}
            reset_alert = EmailAlert(email, user.username, content)
            reset_alert.send_resetpassword_email()
            return Response(data={"code": 1}, status=status.HTTP_200_OK)
