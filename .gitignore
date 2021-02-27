@@ -61,6 +61,7 @@ local_settings.py
 db.sqlite3
 db.sqlite3-journal
 my.cnf
+email_config.json
 
 # Flask stuff:
 instance/
