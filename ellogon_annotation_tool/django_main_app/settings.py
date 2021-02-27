@@ -14,21 +14,37 @@ from datetime import timedelta
 from pathlib import Path
 import json
 import os
+import environ
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# https://django-environ.readthedocs.io/en/latest/#django-environ
+env = environ.Env(
+    # set casting, default value
+    DEBUG=(bool, False),
+    ALLOWED_HOSTS=(list, []),
+    DEFAULT_FROM_EMAIL=(str, ''),
+    DEFAULT_FROM_EMAIL_NO_REPLY=(str, ''),
+    LANGUAGE_CODE=(str, 'en-us'),
+    TIME_ZONE=(str, 'Europe/Athens'),
+)
+# reading .env file
+environ.Env.read_env()
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'flp5bys1x0^es6d2ji77^=vmp5%mo&lc@)9$40emn5*=&$6a18'
+# Raises django's ImproperlyConfigured exception if SECRET_KEY not in os.environ
+SECRET_KEY = env('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# DEBUG = True
+# False if not in os.environ
+DEBUG = env('DEBUG')
 
-ALLOWED_HOSTS = ['annotation.ellogon.org']
+ALLOWED_HOSTS = env('ALLOWED_HOSTS')
 
 
 # Application definition
@@ -82,14 +98,15 @@ WSGI_APPLICATION = 'django_main_app.wsgi.application'
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        #'ENGINE': 'django.db.backends.sqlite3',
-        #'NAME': BASE_DIR / 'db.sqlite3',
-        'ENGINE': 'django.db.backends.mysql',
-        'OPTIONS': {
-            'read_default_file': str(BASE_DIR / 'my.cnf'),
-        },
-    }
+    # 'default': {
+    #     #'ENGINE': 'django.db.backends.sqlite3',
+    #     #'NAME': BASE_DIR / 'db.sqlite3',
+    #     'ENGINE': 'django.db.backends.mysql',
+    #     'OPTIONS': {
+    #         'read_default_file': str(BASE_DIR / 'my.cnf'),
+    #     },
+    # }
+    'default': env.db()
 }
 
 # REST
@@ -139,16 +156,12 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-# email settings
-with open(os.path.join(BASE_DIR, 'email_config.json')) as fd:
-    locals().update(json.load(fd))
-
 # Internationalization
 # https://docs.djangoproject.com/en/3.1/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = env('LANGUAGE_CODE')
 
-TIME_ZONE = 'Europe/Athens'
+TIME_ZONE = env('TIME_ZONE')
 
 USE_I18N = True
 
@@ -164,3 +177,17 @@ STATIC_URL = '/static/'
 
 # Custom user model
 AUTH_USER_MODEL = "authentication.CustomUser"
+
+# Email configuration (django.core.mail)
+# https://django-environ.readthedocs.io/en/latest/#email-settings
+EMAIL_CONFIG = env.email_url(
+    'EMAIL_URL', default='smtp://user@:password@localhost:25'
+)
+vars().update(EMAIL_CONFIG)
+DEFAULT_FROM_EMAIL              = env('DEFAULT_FROM_EMAIL')
+DEFAULT_FROM_EMAIL_NO_REPLY     = env('DEFAULT_FROM_EMAIL_NO_REPLY')
+EMAIL_APP_NAME                  = "Ellogon Annotation Platform"
+EMAIL_USER_ACTIVATION_SUBJECT   = "{EMAIL_APP_NAME}: Account Activation",
+EMAIL_USER_ACTIVATION_BODY      = "This is an automatic email from {sender}. Please don't reply",
+EMAIL_USER_RESET_SUBJECT        = "{EMAIL_APP_NAME}: Account Password Reset",
+EMAIL_USER_RESET_BODY           = "This is an automatic email from {sender}. Please don't reply"

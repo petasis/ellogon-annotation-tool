@@ -1,10 +1,11 @@
 django
-djangorestframework
-markdown
+django-environ
 django-filter
-django-webpack-loader
-mysqlclient
+djangorestframework
 djangorestframework-simplejwt
-simplejwt
+django-webpack-loader
+markdown
+mysqlclient
 requests
+simplejwt
 six
