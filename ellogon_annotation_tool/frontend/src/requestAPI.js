@@ -19,7 +19,7 @@ requestInstance.interceptors.response.use(
            const originalRequest = error.config;
 
            // Prevent infinite loops
-           let baseURL = "http://127.0.0.1:8000/";
+           let baseURL = "/api/";
            if (error.response.status === 401 && originalRequest.url === baseURL + 'user/token/refresh/') {
 
                window.location.href = '/sign-in';

@@ -31,17 +31,25 @@ class Mainview extends Component {
     componentDidMount() {
         // Version 1 - no async: Console.log will output something undefined.
         const messageData1 = this.getMessage();
-        console.log(messageData1)
-        console.log("messageData1: ", JSON.stringify(messageData1, null, 4));
+       // console.log(messageData1)
+       // console.log("messageData1: ", JSON.stringify(messageData1, null, 4));
     }; // componentDidMount()
 
     render() {
+        
+        if(this.props.location.state!=undefined){
+            const msg=this.props.location.state.msg
+            const classname=this.props.location.state.className
         return (
             <div>
-                <p> Hello:</p>
-                <p>{this.state.message}</p>
+                <div className={classname}>{msg}</div>
+               
+
             </div>
-        )
+        )}
+        else{
+            return(<div></div>)
+        }
     }; // render()
 }
 

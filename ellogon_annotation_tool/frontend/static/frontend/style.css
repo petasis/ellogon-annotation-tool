@@ -72,3 +72,13 @@ body, html, .App, #root, .auth-wrapper {
   color: #167bff;
 }
 
+.sidebar_height{
+  height: 100vh;
+}
+
+.qw{
+
+  display: block;
+  margin: auto;
+  cursor:pointer;
+}
