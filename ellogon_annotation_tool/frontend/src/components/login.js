@@ -1,15 +1,23 @@
 import React, { Component } from "react";
 import requestInstance from "../requestAPI";
+import ReactDOM from "react-dom";
 import { useHistory } from "react-router-dom";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 
 class Login extends Component {
     constructor(props) {
         super(props);
-        this.state = {email: "", password: "", remember:false};
+        this.state = {email: "", password: "", remember:false, isPasswordShown:false};
         this.handleChange = this.handleChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
         this.handleCheckboxChange= this.handleCheckboxChange.bind(this)
+        this.togglePasswordVisibility = this.togglePasswordVisibility.bind(this);
     }; // constructor
+
+    togglePasswordVisibility(event){
+        this.setState({
+            isPasswordShown: !this.state.isPasswordShown })
+    };
 
     handleCheckboxChange(event){
        this.setState({
@@ -64,7 +72,17 @@ class Login extends Component {
 
                 <div className="form-group">
                     <label>Password</label>
-                    <input name="password" type="password" value={this.state.password} onChange={this.handleChange} className="form-control" placeholder="Enter password" required/>
+                    <input name="password"
+                           type={this.state.isPasswordShown ? "text" : "password"}
+                           value={this.state.password}
+                           onChange={this.handleChange} className="form-control"
+                           placeholder="Enter password" required/>
+
+
+                        <FontAwesomeIcon className="password-icon" icon={  this.state.isPasswordShown ? "eye-slash" : "eye"}
+                                         onClick={this.togglePasswordVisibility}>
+                        </FontAwesomeIcon>
+                    <i>{  this.state.isPasswordShown ? " Hide Password" : " Show Password"}</i>
                 </div>
 
                 <div className="form-group">

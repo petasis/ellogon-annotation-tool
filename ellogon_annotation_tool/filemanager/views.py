@@ -152,6 +152,25 @@ class CollectionDelete(APIView):
         collection.delete()
         return Response(data={"deleted": True}, status=status.HTTP_200_OK)
 
+
+class DocumentOpen(APIView):
+    queryset = Document.objects.all()
+    serializer_class = DocumentSerializer
+
+    def get(self,request):
+        data=request.GET.dict()
+        try:
+            owner = CustomUser.objects.get(email=data["owner"])
+            project = (Project.objects.filter(name=data["project"], owner=owner)).get()
+            collection = (Collection.objects.filter(name=data["collection"], owner=owner, project=project)).get()
+            document = self.queryset.get(name=data["name"], collection=collection, owner=owner,project=project)
+            document_details={"name":data["name"],"collection":data["collection"],"project":data["project"],"text":document.text}
+            return Response(data={"data":document_details}, status=status.HTTP_200_OK)
+        except Exception as e:
+            print(e)
+            return Response(data={"data": False}, status=status.HTTP_400_BAD_REQUEST)
+
+
 class DocumentUpload(APIView):
         def post(self, request, format='json'):
             # print(request.data['email']+","+request.data["username"])
@@ -159,23 +178,38 @@ class DocumentUpload(APIView):
 
             try:
                 data = request.data
-                owner = CustomUser.objects.get(email=data["owner"])
-                data["owner"] = owner.pk
-                data["updated_by"]=owner.pk
-                project = (Project.objects.filter(name=request.data["project"], owner=owner)).get()
-                data['project']=project.pk
-                collection = Collection.objects.filter(name=request.data["collection"], owner=owner,project=project)
-                data["collection"] = (collection.get()).pk
+                print(data)
+                owner = CustomUser.objects.get(email=data[0]["owner"])
+                project = (Project.objects.filter(name=data[0]["project"], owner=owner)).get()
+                collection = Collection.objects.filter(name=request.data[0]["collection"], owner=owner, project=project)
             except Exception as e:
-                print("xxx")
+                print(e)
                 return Response(data={"create": False}, status=status.HTTP_400_BAD_REQUEST)
-            serializer = DocumentSerializer(data=data)
-            if serializer.is_valid():
-                document = serializer.save()
-                if document:
-                    json = serializer.data
-                    return Response(json, status=status.HTTP_201_CREATED)
+            try:
+                for data_item in data:
+                    data_item["owner"] = owner.pk
+                    data_item["updated_by"]=owner.pk
+                    data_item['project']=project.pk
+                    data_item["collection"] = (collection.get()).pk
+                    serializer = DocumentSerializer(data=data_item)
+                    serializer = DocumentSerializer(data=data_item)
+                    if serializer.is_valid():
+                            document = serializer.save()
+                # if document:
+                #     json = serializer.data
+                return Response({"create":True}, status=status.HTTP_201_CREATED)
+            except Exception as e:
+                print(e)
+                return Response(data={"create": False}, status=status.HTTP_400_BAD_REQUEST)
+           # print(serializer.errors)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            # if serializer.is_valid():
+            #     document = serializer.save()
+            #     if document:
+            #         json = serializer.data
+            #         return Response(json, status=status.HTTP_201_CREATED)
+            # print(serializer.errors)
+            # return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class DocumentUpdate(GenericAPIView, UpdateModelMixin):
         queryset = Document.objects.all()
@@ -237,6 +271,36 @@ class DocumentDelete(APIView):
             document.delete()
             return Response(data={"deleted": True}, status=status.HTTP_200_OK)
 
+
+class RetrieveUserDataDetails(APIView):
+    def get(self,request,email):
+        try:
+            owner=CustomUser.objects.get(email=email)
+            projects=Project.objects.filter(owner=owner)
+            userdata = []
+
+            record={}
+            for project in projects:
+                record = {"id":"P"+str(project.pk), "name": project.name, "encoding": project.encoding,"created": project.created.strftime("%d/%m/%Y, %H:%M"),"updated": project.updated.strftime("%d/%m/%Y, %H:%M"), "parentName": None}
+                userdata.append(record)
+
+                collections=Collection.objects.filter(owner=owner,project=project)
+                for collection in collections:
+                    record = {"id":"C"+str(collection.pk),"name": collection.name, "encoding": collection.encoding,"created": collection.created.strftime("%d/%m/%Y, %H:%M"),"updated": collection.updated.strftime("%d/%m/%Y, %H:%M"), "parentName": project.name}
+                    userdata.append(record)
+                    documents=Document.objects.filter(owner=owner,project=project,collection=collection)
+                    for document in documents:
+                        record = {"id":"D"+str(document.pk),"name": document.name, "encoding": document.encoding,"created": document.created.strftime("%d/%m/%Y, %H:%M"),"updated": document.updated.strftime("%d/%m/%Y, %H:%M"),"parentName": collection.name,"rootName":project.name}
+                        userdata.append(record)
+
+        except Exception as ex:
+         #   print(ex)
+           return Response(data={"userdata": "not found"}, status=status.HTTP_404_NOT_FOUND)
+        #print(userdata)
+        return Response(data={"userdata": userdata}, status=status.HTTP_200_OK)
+
+
+
 class RetrieveUserData(APIView):
     def get(self,request,email):
 
@@ -255,7 +319,6 @@ class RetrieveUserData(APIView):
                     crecord["documents"]=[]
                     documents=Document.objects.filter(owner=owner,project=project,collection=collection)
                     for document in documents:
-                       # print(document.name)
                         crecord["documents"].append(document.name)
                     precord["collections"].append(crecord)
                     crecord={}
@@ -275,4 +338,7 @@ class RetrieveUserData(APIView):
 
 
 
+class MainView(APIView):
 
+    def get(self, request):
+        return Response(data={"hello": "world"}, status=status.HTTP_200_OK)

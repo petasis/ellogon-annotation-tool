@@ -75,7 +75,6 @@ MIDDLEWARE = [
 
 
 ROOT_URLCONF = 'django_main_app.urls'
-
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -99,15 +98,15 @@ WSGI_APPLICATION = 'django_main_app.wsgi.application'
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 
 DATABASES = {
-    # 'default': {
-    #     #'ENGINE': 'django.db.backends.sqlite3',
-    #     #'NAME': BASE_DIR / 'db.sqlite3',
-    #     'ENGINE': 'django.db.backends.mysql',
-    #     'OPTIONS': {
-    #         'read_default_file': str(BASE_DIR / 'my.cnf'),
-    #     },
-    # }
-    'default': env.db()
+     'default': {
+         'ENGINE': 'django.db.backends.sqlite3',
+         'NAME': BASE_DIR / 'db.sqlite3',
+         #'ENGINE': 'django.db.backends.mysql',
+         #'OPTIONS': {
+         #    'read_default_file': str(BASE_DIR / 'my.cnf'),
+         #},
+     }
+    #'default': env.db()
 }
 
 # REST

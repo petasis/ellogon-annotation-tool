@@ -14,27 +14,40 @@ import {
     FaArrowsAltH
 } from "react-icons/fa";
 import requestInstance from "../requestAPI";
+import logo from '../images/EllogonCyan.png';
+
 
 class SideBar extends Component {
 
     constructor(props) {
         super(props);
         this.state = {
-            userdata: [],update_count:0,collapsed:false
+            userdata: [],update_count:0,collapsed:true
         };
-        this.DeleteHandler=this.DeleteHandler.bind(this)
-        this.AddViewHandler=this.AddViewHandler.bind(this)
-        this.RenameViewHandler=this.RenameViewHandler.bind(this)
+        this.FileOperationHandler=this.FileOperationHandler.bind(this)
+     //   this.DeleteHandler=this.DeleteHandler.bind(this)
+     //   this.AddViewHandler=this.AddViewHandler.bind(this)
+      //  this.RenameViewHandler=this.RenameViewHandler.bind(this)
         this.RetrieveUserData=this.RetrieveUserData.bind(this)
         this.collapseSidebar=this.collapseSidebar.bind(this)
 
     }
 
+
+FileOperationHandler(item,project,collection,filename,pathname){
+        let  params={ item:item,project:project,collection:collection,filename:filename}
+
+
+        this.props.history.push({
+        pathname: pathname,
+  search: '',
+  state:  params
+})
+}
+/*
     DeleteHandler(item,project,collection,filename){
        let  params={ item:item,project:project,collection:collection,filename:filename}
-       /* this.setState(prevState => {
-             return {update_count: prevState.update_count + 1}
-                    })*/
+
 
         this.props.history.push({
         pathname: '/delete_item',
@@ -45,9 +58,20 @@ class SideBar extends Component {
          //   console.log(item+","+project+","+ collection+","+filename);
     }
 
+
+    DocumentViewHandler(project,collection,filename){
+         let  params={project:project,collection:collection,filename:filename}
+          this.props.history.push({
+             pathname: '/document_view',
+              search: '',
+              state:  params
+})
+    }
+*/
+
 collapseSidebar(){
 
-
+       //console.log(this.state.collapsed)
        this.setState({
 
       collapsed:!this.state.collapsed
@@ -55,13 +79,11 @@ collapseSidebar(){
 
 
 }
-
+/*
     AddViewHandler(item,project,collection,filename){
           console.log(this.props)
          let  params={ item:item,project:project,collection:collection,filename:filename}
-       /*   this.setState(prevState => {
-             return {update_count: prevState.update_count + 1}
-                    })*/
+
 
           this.props.history.push({
         pathname: '/add_item',
@@ -73,9 +95,7 @@ collapseSidebar(){
 
     RenameViewHandler(item,project,collection,filename){
          let  params={ item:item,project:project,collection:collection,filename:filename}
-         /* this.setState(prevState => {
-             return {update_count: prevState.update_count + 1}
-                    })*/
+
 
 
           this.props.history.push({
@@ -85,9 +105,9 @@ collapseSidebar(){
 })
 
 
-        // console.log(item+","+project+","+ collection+","+filename);
-    }
 
+    }
+*/
 async RetrieveUserData(){
        // console.log("retrieve_userdata")
        let useremail=localStorage.getItem(('email'))
@@ -116,8 +136,8 @@ try {
        // window.addEventListener('onbeforeunload', this.props.handleWindowClose);
 
         // Version 1 - no async: Console.log will output something undefined.
-
-     console.log(this.props.login_status)
+       // console.log(this.state.collapsed)
+    // console.log(this.props.login_status)
         if (this.props.login_status==true){
            // console.log("request_block")
             const userdata = this.RetrieveUserData();
@@ -125,6 +145,8 @@ try {
 
         }
     }
+
+
 
     componentDidUpdate(prevProps, prevState, snapshot) {
        // console.log(prevProps.location.state)
@@ -216,17 +238,19 @@ try {
                    docs=value1.documents
                    for (const [index2, value2] of docs.entries()){
                        doc_items.push(<MenuItem icon={<FaFileAlt />}>
-                           {value2}&nbsp;&nbsp;&nbsp;
-                           <FaEdit onClick={() => this.RenameViewHandler("document",value.project,value1.collection,value2)}></FaEdit>&nbsp;&nbsp;&nbsp;
-                           <FaTrashAlt  onClick={() => this.DeleteHandler("document",value.project,value1.collection,value2)} />
+
+
+                           <span onClick={() => this.FileOperationHandler("document",value.project,value1.collection,value2,"/document_view")}> {value2} </span>&nbsp;&nbsp;&nbsp;
+                           <FaEdit onClick={() => this.FileOperationHandler("document",value.project,value1.collection,value2,"/rename_item")}></FaEdit>&nbsp;&nbsp;&nbsp;
+                           <FaTrashAlt  onClick={() => this.FileOperationHandler("document",value.project,value1.collection,value2,"/delete_item")} />
 
 
                        </MenuItem>)
                    }
                    title=<div>{value1.collection}&nbsp;&nbsp;&nbsp;
-                   <FaPlusCircle onClick={() => this.AddViewHandler("document",value.project,value1.collection,null)}></FaPlusCircle>&nbsp;&nbsp;&nbsp;
-                   <FaEdit onClick={() => this.RenameViewHandler("collection",value.project,value1.collection,null)}></FaEdit>&nbsp;&nbsp;&nbsp;
-                     <FaTrashAlt  onClick={() => this.DeleteHandler("collection",value.project,value1.collection,value1.documents)} />
+                   <FaPlusCircle onClick={() => this.FileOperationHandler("document",value.project,value1.collection,null,"/add_item")}></FaPlusCircle>&nbsp;&nbsp;&nbsp;
+                   <FaEdit onClick={() => this.FileOperationHandler("collection",value.project,value1.collection,null,"/rename_item")}></FaEdit>&nbsp;&nbsp;&nbsp;
+                     <FaTrashAlt  onClick={() => this.FileOperationHandler("collection",value.project,value1.collection,value1.documents,"/delete_item")} />
 
                    </div>
                    collection_items.push(<SubMenu title={title} icon={<FaFolder />}>
@@ -235,9 +259,9 @@ try {
                    doc_items=[]
                }
                 title=<div>{value.project} &nbsp;&nbsp;&nbsp;
-                <FaPlusCircle onClick={() => this.AddViewHandler("collection",value.project,null,null)}></FaPlusCircle> &nbsp;&nbsp;&nbsp;
-                    <FaEdit onClick={() => this.RenameViewHandler("project",value.project,null,null)}></FaEdit> &nbsp;&nbsp;&nbsp;
-                  <FaTrashAlt  onClick={() => this.DeleteHandler("project",value.project,value.collections,null)} />
+                <FaPlusCircle onClick={() => this.FileOperationHandler("collection",value.project,null,null,"/add_item")}></FaPlusCircle> &nbsp;&nbsp;&nbsp;
+                    <FaEdit onClick={() => this.FileOperationHandler("project",value.project,null,null,"/rename_item")}></FaEdit> &nbsp;&nbsp;&nbsp;
+                  <FaTrashAlt  onClick={() => this.FileOperationHandler("project",value.project,value.collections,null,"/delete_item")} />
 
                </div>
               document_list.push(<SubMenu title={title} icon={<FaRegFolder />}>
@@ -246,55 +270,17 @@ try {
                collection_items=[]
            }
 
-     /*
-          for (const [index, value] of documents.entries()) {
-
-                        document_list.push(<SubMenu title={value.project} icon={<FaRegFolder />}>)
-                        collection=value.collections
-                        for (const [index1, value1] of collection.entries()){
-                           document_list.push(<SubMenu title={value1.collection} icon={<FaFolder />}>)
-                           docs=value1.documents
-                           for (const [index2, value2] of docs.entries()){
-                                  document_list.push(<MenuItem icon={<FaFolder />}>{value2}</MenuItem>)   }
-                            document_list.push(</SubMenu>)
-                               }
-                           document_list.push(</SubMenu>)
-                       }
-
-
-             /*          collection=value.collections
-                   for (const [index1, value1] of collection.entries()){
-                  //      document_list.push(<SubMenu title={value1.collection} icon={<FaFolder />}>)
-                      }
-                  docs=value1.documents
-                  for (const [index2, value2] of docs.entries()){
-                     //   document_list.push(<MenuItem>{value2}</MenuItem>)
-
-              }
-*/
-
-
-
-
-
-
-
-
-
-
-
-
 
 
           return (
-            <ProSidebar collapsed={this.state.collapsed}>
+            <ProSidebar collapsed={this.state.collapsed} onMouseEnter={this.collapseSidebar}>
   <SidebarHeader>
-   ELlogon Logo
+      <img src={logo} alt="ELlogon Logo" width="50" height="50"/>
   </SidebarHeader>
   <SidebarContent>
        <Menu iconShape="square">
     <MenuItem icon={<FaUserEdit />} >Manage Profile
-    <Link  to={"/user/profile_manage"}></Link>
+    <Link  to={"/manage_profile"}></Link>
 
     </MenuItem>
     <MenuItem icon={<FaSignOutAlt />} onClick={this.props.handleLogout}>Logout</MenuItem>
@@ -302,12 +288,12 @@ try {
          <Menu iconShape="square">
 
     <SubMenu   title={<div>Projects &nbsp;&nbsp;&nbsp;
-        <FaPlusCircle onClick={() => this.AddViewHandler("project",null,null,null)}></FaPlusCircle>
+        <FaPlusCircle onClick={() => this.FileOperationHandler("project",null,null,null,"/add_item")}></FaPlusCircle>
 
 
     </div>}
 
-             icon={<FaHeart />}>
+             icon={<FaFolder />}>
           {document_list}
         {/*        <SubMenu title="Project0" icon={<FaHeart />}></SubMenu>
       <SubMenu title="Project1" icon={<FaHeart />}>
