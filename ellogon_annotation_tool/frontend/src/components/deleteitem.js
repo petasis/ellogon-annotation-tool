@@ -9,7 +9,7 @@ class DeleteItem extends Component {
             message: "",
         };
         this.handleClickDelete = this.handleClickDelete.bind(this)
-
+        this.CloseDialog = this.CloseDialog.bind(this)
     }
 
 
@@ -67,6 +67,11 @@ class DeleteItem extends Component {
 
     }
 
+    CloseDialog(){
+        this.props.history.push({
+        pathname: '/main'})
+    }
+
 
 
     componentDidMount() {
@@ -80,7 +85,7 @@ class DeleteItem extends Component {
     render() {
         console.log(this.props.location.state)
         const type = this.props.location.state.item
-        console.log(type)
+       // console.log(type)
         let message_params=[];
         let i;
         switch (type) {
@@ -93,9 +98,9 @@ class DeleteItem extends Component {
                 for (i = 0; i < this.props.location.state.filename.length; i++) {
                     doc_list.push(<span>{this.props.location.state.filename[i]}<br/></span>)
                 }
-                console.log("1")
+              //  console.log("1")
                 message_params = [<span>collection {this.props.location.state.collection}  of project {this.props.location.state.project}.<br/></span>]
-                 console.log("2")
+             //    console.log("2")
                 for(i=0;i<doc_list.length;i++){
                     message_params.push(doc_list[i])
                 }
@@ -127,7 +132,13 @@ class DeleteItem extends Component {
                     <div className='custom-ui'>
                         <h1>Delete Alert</h1>
                         <p>Are you sure that you want to delete {message_params}</p>
-                        <button onClick={onClose}>No</button>
+                        <button onClick={() => {
+                                this.CloseDialog();
+                                onClose();
+                            }}
+
+
+                        >No</button>
                         <button
                             onClick={() => {
                                 this.handleClickDelete();
