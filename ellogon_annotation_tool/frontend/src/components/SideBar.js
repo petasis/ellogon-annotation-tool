@@ -280,7 +280,7 @@ try {
   <SidebarContent>
        <Menu iconShape="square">
     <MenuItem icon={<FaUserEdit />} >Manage Profile
-    <Link  to={"/manage_profile"}></Link>
+    <Link  to={"/user/profile_manage"}></Link>
 
     </MenuItem>
     <MenuItem icon={<FaSignOutAlt />} onClick={this.props.handleLogout}>Logout</MenuItem>
