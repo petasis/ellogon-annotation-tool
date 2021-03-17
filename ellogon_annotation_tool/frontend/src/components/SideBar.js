@@ -15,8 +15,6 @@ import {
 } from "react-icons/fa";
 import requestInstance from "../requestAPI";
 import logo from '../images/EllogonCyan.png';
-
-
 class SideBar extends Component {
 
     constructor(props) {
@@ -69,12 +67,12 @@ FileOperationHandler(item,project,collection,filename,pathname){
     }
 */
 
-collapseSidebar(){
+collapseSidebar(status){
 
        //console.log(this.state.collapsed)
        this.setState({
 
-      collapsed:!this.state.collapsed
+      collapsed:status
     })
 
 
@@ -273,9 +271,9 @@ try {
 
 
           return (
-            <ProSidebar collapsed={this.state.collapsed} onMouseEnter={this.collapseSidebar}>
+            <ProSidebar collapsed={this.state.collapsed} onMouseEnter={() =>this.collapseSidebar(false)} onMouseLeave={() =>this.collapseSidebar(true)}>
   <SidebarHeader>
-      <img src={logo} alt="ELlogon Logo" width="50" height="50"/>
+  <img src={logo} alt="ELlogon Logo" width="50" height="50"/>
   </SidebarHeader>
   <SidebarContent>
        <Menu iconShape="square">
@@ -352,7 +350,7 @@ try {
   </Menu>
   </SidebarContent>
   <SidebarFooter>
-     <FaArrowsAltH size={30} className="qw" onClick={this.collapseSidebar}></FaArrowsAltH>
+     <FaArrowsAltH size={30} className="qw" onMouseEnter={() =>this.collapseSidebar(!this.state.collapsed)}></FaArrowsAltH>
   </SidebarFooter>
 </ProSidebar>
 

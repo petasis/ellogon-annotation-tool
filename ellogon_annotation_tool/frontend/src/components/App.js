@@ -11,9 +11,9 @@ import DeleteItem      from "./deleteitem"
 import RenameItem      from "./renameItem"
 import SideBar         from "./SideBar";
 import Reset_password  from "./reset_password"
-import DocumentViewer  from "./documentviewer"
 import {withRouter}    from "react-router-dom";
-
+import DocumentViewer from "./documentviewer";
+import {FaTimes} from "react-icons/fa";
 
 class App extends Component {
     constructor(props) {
@@ -23,8 +23,16 @@ class App extends Component {
             "pages":["/main","/main/","/user/profile_manage","/user/profile_manage/","/add_item","/add_item/","/delete_item","/delete_item/","/rename_item","/rename_item/","/document_view","/document_view/"]
 
         }
-        this.handleLogout = this.handleLogout.bind(this);
+         this.handleLogout = this.handleLogout.bind(this);
+         this.ReturnMain=this.ReturnMain.bind(this);
     }
+
+    ReturnMain(){
+     this.props.history.push({
+                pathname: '/main'})
+}
+
+
 
     async handleLogout() {
         try {
@@ -49,9 +57,11 @@ class App extends Component {
         let refresh_token = localStorage.getItem('refresh_token');
         let remember      = JSON.parse(localStorage.getItem("remember"));
         if (access_token != null && refresh_token != null) {
-            let accesstokenParts = JSON.parse(atob(access_token.split('.')[1]));
-            let now = Math.ceil(Date.now() / 1000);
-            if (remember == false  && accesstokenParts.exp < now) {
+             let accesstokenParts = JSON.parse(atob(access_token.split('.')[1]));
+             let now = Math.ceil(Date.now() / 1000);
+
+
+            if (remember == false && accesstokenParts.exp < now) {
                 const response=this.handleLogout()
             } else {
                 if (remember == true) {
@@ -66,6 +76,9 @@ class App extends Component {
         let login_state=this.props.location.pathname;
         let login_status=this.state.pages.includes(login_state)
         let largeview_pages=["/document_view","/document_view/","/main","/main/"]
+
+
+
         let doc_status=largeview_pages.includes(login_state)
         if (doc_status==true){
             bcolor="inherit"
@@ -97,20 +110,27 @@ class App extends Component {
 
                     <div className="auth-wrapper">
                         <div className={doc_status?"codemirror_xl":"auth-inner"}>
+
                             <Switch>
                                // <Route exact path='/'                      component={Login}/>
                                 <Route path="/login"                       component={Login}/>
                                 <Route path="/sign-in"                     component={Login}/>
                                 <Route path="/sign-up"                     component={Signup}/>
-                                {/*<Route path="/main"                        component={MainView}/>*/}
-                                <Route path="/main"   render={(props) => (<MainView {...props} login_status={login_status} />)}/>
+                                 <Route path="/main"   render={(props) => (
+                                 <MainView {...props} login_status={login_status} />
+                                    )}/>
+                                  <Route path="/add_item"   render={(props) => (
+                                 <AddItem {...props} ReturnMain={this.ReturnMain} />
+                                    )}/>
                                 <Route path="/add_item"                    component={AddItem}/>
                                  <Route path="/delete_item"                component={DeleteItem}/>
                                  <Route path="/rename_item"                component={RenameItem}/>
                                 <Route path="/forget_password"             component={Reset_password}/>
                                 <Route path="/user/profile_manage"         component={ManageProfile}/>
+                               <Route path="/document_view"   render={(props) => (
+                                 <DocumentViewer {...props} ReturnMain={this.ReturnMain} />
+                                    )}/>
                                 <Route path="/api/user/activate/:uidb64/:token" component={Activation}/>
-                                 <Route path="/document_view"  component={DocumentViewer}/>
                             </Switch>
                         </div>
                     </div>

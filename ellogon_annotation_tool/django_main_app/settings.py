@@ -60,7 +60,8 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt.token_blacklist',
     'authentication', #add my authentication app
     'frontend',
-    'filemanager'
+    'filemanager',
+'annotation_scheme_options'
 ]
 
 MIDDLEWARE = [

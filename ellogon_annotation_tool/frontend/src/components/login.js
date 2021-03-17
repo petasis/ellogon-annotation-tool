@@ -1,8 +1,10 @@
 import React, { Component } from "react";
 import requestInstance from "../requestAPI";
-import ReactDOM from "react-dom";
+
 import { useHistory } from "react-router-dom";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import axios from "axios";
+import {getSchema, schemerequestInstance} from "../AnnotationSchemeAPI";
 
 class Login extends Component {
     constructor(props) {
@@ -12,12 +14,15 @@ class Login extends Component {
         this.handleSubmit = this.handleSubmit.bind(this);
         this.handleCheckboxChange= this.handleCheckboxChange.bind(this)
         this.togglePasswordVisibility = this.togglePasswordVisibility.bind(this);
+
     }; // constructor
+
 
     togglePasswordVisibility(event){
         this.setState({
             isPasswordShown: !this.state.isPasswordShown })
     };
+
 
     handleCheckboxChange(event){
        this.setState({
@@ -60,6 +65,49 @@ class Login extends Component {
         }
     }; // handleSubmit()
 
+
+
+
+
+
+     componentDidMount(){
+       //  let languages=getLanguages(schemerequestInstance,"button")
+/*
+      //  console.log("Requests")
+       /*  let languages=getLanguages(schemerequestInstance,"button")
+            languages=getLanguages(schemerequestInstance,"coreference");
+        let types=getTypes(schemerequestInstance,"button","greek")
+         types=getTypes(schemerequestInstance,"button","english")
+         types=getTypes(schemerequestInstance,"button","EN-EL")
+         types=getTypes(schemerequestInstance,"button","igbo")
+         types=getTypes(schemerequestInstance,"button","neutral")
+         types=getTypes(schemerequestInstance,"coreference","greek")
+          types=getTypes(schemerequestInstance,"coreference","english")
+         types=getTypes(schemerequestInstance,"coreference","EN-EL")
+         types=getTypes(schemerequestInstance,"coreference","igbo")
+         types=getTypes(schemerequestInstance,"coreference","neutral")
+         let type="coreference"
+         let lang="neutral"
+         let  annotation_type="character"
+     //    let annotation_attribute="type"
+         let annotation_attribute_alternatives=["NCSR"]
+        // let  annotation_type="polarity"
+       //  let annotation_attribute=null
+       //  let attribute_alternatives=getAttributeAlternatives(schemerequestInstance,type,lang,annotation_type,annotation_attribute)
+      // for(let i=0;i<1;i++){
+             let attributes = getCoreferenceAttributes(schemerequestInstance, type, lang, annotation_type,annotation_attribute_alternatives[0])
+       //  }
+           // let attributes = getAttributes(schemerequestInstance, type, lang, annotation_type[5])
+
+
+ /*
+      //  console.log(languages)*/
+}
+
+
+
+
+
     render() {
         return (
             <form onSubmit={this.handleSubmit}>
@@ -72,17 +120,13 @@ class Login extends Component {
 
                 <div className="form-group">
                     <label>Password</label>
-                    <input name="password"
-                           type={this.state.isPasswordShown ? "text" : "password"}
-                           value={this.state.password}
-                           onChange={this.handleChange} className="form-control"
-                           placeholder="Enter password" required/>
-
-
-                        <FontAwesomeIcon className="password-icon" icon={  this.state.isPasswordShown ? "eye-slash" : "eye"}
+                    <input name="password" type={this.state.isPasswordShown ? "text" : "password"} value={this.state.password} onChange={this.handleChange} className="form-control" placeholder="Enter password" required/>
+ <FontAwesomeIcon className="password-icon" icon={  this.state.isPasswordShown ? "eye-slash" : "eye"}
                                          onClick={this.togglePasswordVisibility}>
                         </FontAwesomeIcon>
                     <i>{  this.state.isPasswordShown ? " Hide Password" : " Show Password"}</i>
+
+
                 </div>
 
                 <div className="form-group">
