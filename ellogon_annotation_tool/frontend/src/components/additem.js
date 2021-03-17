@@ -3,7 +3,7 @@ import requestInstance from "../requestAPI";
 import ToggleButton from 'react-toggle-button'
 import {Check,X} from "./toggle_icons"
 
-import {FaArrowLeft, FaArrowRight,FaMinusCircle} from "react-icons/fa";
+import {FaArrowLeft, FaArrowRight, FaMinusCircle, FaTimes} from "react-icons/fa";
 import {MenuItem} from "react-pro-sidebar";
 class AddItem extends Component {
 
@@ -30,6 +30,7 @@ class AddItem extends Component {
         this.dragEnter=this.dragEnter.bind(this)
         this.dragLeave=this.dragLeave.bind(this)
         this.fileDrop= this.fileDrop.bind(this)
+
     }
 
 
@@ -112,7 +113,6 @@ getFiles(files){
          }*/
 
 }
-
 
 
 
@@ -380,7 +380,7 @@ let documentbrowser=<div className="form-group">
              for (const [index, value] of this.state.filenames.entries()) {
                  item=<div style={{display: (this.state.index == index) ? "block" : "none"}}>
                      <h5> Filename:{value} &nbsp;&nbsp;
-                         <span style={{color: 'red'}}><FaMinusCircle onClick={this.DeleteDoc} /></span></h5>
+                         <span style={{color: 'red',cursor:"pointer"}}><FaMinusCircle onClick={this.DeleteDoc} /></span></h5>
                      {field_handler}
                      {common_fields}
                       <span> < button className = "btn btn-dark btn-block" style={{display: (this.state.index != 0) ? "block" : "none"}}  onClick={this.Back}> <FaArrowLeft/> < /button>
@@ -396,7 +396,15 @@ let documentbrowser=<div className="form-group">
 
         return (
             <div>
-                <h3> New {this.capitalizeTitle(type)} </h3>
+
+                 <FaTimes onClick={this.props.ReturnMain} style={{
+
+                    cursor: "pointer",position:"relative",top:0,right:0}} />
+
+                <h3> New {this.capitalizeTitle(type)}
+
+
+                </h3>
                 <form onSubmit={this.handleSubmit}>
                     {form_fields}
                     {/* <div style={{display:(this.props.location.state==1) ? "block":"none"}}  className="alert alert-success" role="alert">

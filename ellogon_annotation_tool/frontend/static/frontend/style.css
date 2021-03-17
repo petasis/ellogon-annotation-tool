@@ -80,7 +80,11 @@ body, html, .App, #root, .auth-wrapper {
   height:100% ;
   min-height:100% ;
   display: flex;
-overflow: hidden;
+  position: -webkit-sticky; /* Safari */
+  position: sticky;
+  top: 0;
+  left:0;
+  z-index: 4;
 }
 
 .qw{
@@ -99,6 +103,7 @@ overflow: hidden;
   transition: all .3s;
   display: flex;
 
+
 }
 
 .drop-container {
@@ -112,4 +117,14 @@ overflow: hidden;
     padding-top: 10px;
     border: 4px dashed #4aa1f3;
     color: rgba(0, 0, 0, 0)
+}
+
+.Sticky{
+position: -webkit-sticky; /* Safari */
+  position: sticky;
+  top: 0;
+  z-index: 4;
+
+  background-color:seashell;
+
 }
