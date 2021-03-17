@@ -22,5 +22,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/',   include('authentication.urls')),
     path('api/fileoperation/',include('filemanager.urls')),
+    #path('api/annotation_scheme_options/',include('annotation_scheme_options.urls')),
+  path('annotation_scheme_options/',include('annotation_scheme_options.urls')),
     path('', include('frontend.urls'))
+
 ]
