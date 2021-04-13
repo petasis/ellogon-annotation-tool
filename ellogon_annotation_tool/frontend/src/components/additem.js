@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import requestInstance from "../requestAPI";
 import ToggleButton from 'react-toggle-button'
 import {Check,X} from "./toggle_icons"
-
+import {Redirect} from 'react-router-dom';
 import {FaArrowLeft, FaArrowRight, FaMinusCircle, FaTimes} from "react-icons/fa";
 import {MenuItem} from "react-pro-sidebar";
 class AddItem extends Component {
@@ -289,11 +289,15 @@ fileDrop(event) {
 }
 
 
+componentDidCatch(error, errorInfo) {
+        console.log("executed")
 
+}
 
 
 
     componentDidMount(){
+
         // It's not the most straightforward thing to run an async method in componentDidMount
        // window.addEventListener('onbeforeunload', this.props.handleWindowClose);
 
@@ -303,96 +307,127 @@ fileDrop(event) {
 
 
 
-
-    render(){
-       let type=this.props.location.state.item
-        let submitview
-        if(type=="project" ||type=="collection"){
-            submitview=true
+    render() {
 
 
+
+       // if (this.location.state)
+        /*try {
+            let type = this.props.location.state.item
+        } catch (err) {
+        c
+        }*/
+        /*if (this.props.location.state===undefined){
+            this.props.ReturnMain()
         }
-        else{
-            if(this.state.index == (this.state.filenames.length-1)){
-                submitview=true
-            }
-            else{
-                submitview=false
-            }
-        }
+        */
 
 
-      // this.setState({ item: this.props.location.state.item });
-       //  console.log(this.props.location.state.item)
-        let fieldname=  <div className="form-group">
-                    <label>Name</label>
-                    <input type="text" name="name" className="form-control" placeholder="Name" value={this.state.name} onChange={this.handleChange} required />
-                </div>
-       let field_handler=<div className="form-group">
-                    <label>Handler</label>
-                    <input type="text" name="handler" className="form-control" placeholder="Handler" value={this.state.handler} onChange={this.handleChange} required />
-                </div>
-        let common_fields=[]
+
+            if(this.props.location.state==null){
+
+                return <Redirect to='/sign-in' />
+            }
+
+              let type = this.props.location.state.item
+
+            let submitview
+            if (type == "project" || type == "collection") {
+                submitview = true
+
+
+            } else {
+                if (this.state.index == (this.state.filenames.length - 1)) {
+                    submitview = true
+                } else {
+                    submitview = false
+                }
+            }
+
+
+            // this.setState({ item: this.props.location.state.item });
+            //  console.log(this.props.location.state.item)
+            let fieldname = <div className="form-group">
+                <label>Name</label>
+                <input type="text" name="name" className="form-control" placeholder="Name" value={this.state.name}
+                       onChange={this.handleChange} required/>
+            </div>
+            let field_handler = <div className="form-group">
+                <label>Handler</label>
+                <input type="text" name="handler" className="form-control" placeholder="Handler"
+                       value={this.state.handler} onChange={this.handleChange} required/>
+            </div>
+            let common_fields = []
             common_fields.push(<div className="form-group">
-                    <label>Encoding</label><br/>
-                   <select name="encoding" value={this.state.encoding} onChange={this.handleChange}>
-                       <option value="UTF-8">UTF-8</option>
-                       <option value="UNICODE">UNICODE</option>
-                       <option value="ASCII">ASCII</option>
-                       <option value="OTHER">OTHER</option>
-                    </select>
-                </div>)
-                common_fields.push(<div className="form-group">
-                         <label>Public</label>
-                        <ToggleButton
-                         inactiveLabel={<X/>}
-                            activeLabel={<Check/>}
-                            value={this.state.public}
-                            onToggle={(value) => {
-                                this.setState({
-                                    public: !value,
-    })
-  }} />
-                    </div>)
-let documentbrowser=<div className="form-group">
-                    <label for="files">Browser or Drag/Drop your files</label><br/>
-                    <input id="files" type="file" accept="text/plain"  multiple onChange={this.onFileChange} className="drop-container"
-                    onDragOver={this.dragOver}
-                    onDragEnter={this.dragEnter}
-                    onDragLeave={this.dragLeave}
-                    onDrop={this.fileDrop}
-                    />
-    </div>
-   let form_fields=[]
-        if( type=="project" || type=="collection"){
-            form_fields.push(fieldname)
-            form_fields.push(common_fields)
-        }
-         if(type=="collection"){
-              form_fields.push(field_handler)
-         }
-         if( type=="document") {
-             form_fields.push(documentbrowser)
+                <label>Encoding</label><br/>
+                <select name="encoding" value={this.state.encoding} onChange={this.handleChange}>
+                    <option value="UTF-8">UTF-8</option>
+                    <option value="UNICODE">UNICODE</option>
+                    <option value="ASCII">ASCII</option>
+                    <option value="OTHER">OTHER</option>
+                </select>
+            </div>)
+            common_fields.push(<div className="form-group">
+                <label>Public</label>
+                <ToggleButton
+                    inactiveLabel={<X/>}
+                    activeLabel={<Check/>}
+                    value={this.state.public}
+                    onToggle={(value) => {
+                        this.setState({
+                            public: !value,
+                        })
+                    }}/>
+            </div>)
+            let documentbrowser = <div className="form-group">
+                <label for="files">Browser or Drag/Drop your files</label><br/>
+                <input id="files" type="file" accept="text/plain" multiple onChange={this.onFileChange}
+                       className="drop-container"
+                       onDragOver={this.dragOver}
+                       onDragEnter={this.dragEnter}
+                       onDragLeave={this.dragLeave}
+                       onDrop={this.fileDrop}
+                />
+            </div>
+            let form_fields = []
+            if (type == "project" || type == "collection") {
+                form_fields.push(fieldname)
+                form_fields.push(common_fields)
+            }
+            if (type == "collection") {
+                form_fields.push(field_handler)
+            }
+            if (type == "document") {
+                form_fields.push(documentbrowser)
 
 
+                let item
+                for (const [index, value] of this.state.filenames.entries()) {
+                    item = <div style={{display: (this.state.index == index) ? "block" : "none"}}>
+                        <h5> Filename:{value} &nbsp;&nbsp;
+                            <span style={{color: 'red', cursor: "pointer"}}><FaMinusCircle
+                                onClick={this.DeleteDoc}/></span></h5>
+                        {field_handler}
+                        {common_fields}
+                        <span> < button className="btn btn-dark btn-block"
+                                        style={{display: (this.state.index != 0) ? "block" : "none"}}
+                                        onClick={this.Back}> <FaArrowLeft/> < /button>
+                          < button className="btn btn-dark btn-block"
+                                   style={{display: (this.state.index != (this.state.filenames.length - 1)) ? "block" : "none"}}
+                                   onClick={this.Next}> <FaArrowRight/> < /button></span>
+                    </div>
+                    form_fields.push(item)
 
-             let item
-             for (const [index, value] of this.state.filenames.entries()) {
-                 item=<div style={{display: (this.state.index == index) ? "block" : "none"}}>
-                     <h5> Filename:{value} &nbsp;&nbsp;
-                         <span style={{color: 'red',cursor:"pointer"}}><FaMinusCircle onClick={this.DeleteDoc} /></span></h5>
-                     {field_handler}
-                     {common_fields}
-                      <span> < button className = "btn btn-dark btn-block" style={{display: (this.state.index != 0) ? "block" : "none"}}  onClick={this.Back}> <FaArrowLeft/> < /button>
-                          < button className = "btn btn-dark btn-block" style={{display: (this.state.index != (this.state.filenames.length-1)) ? "block" : "none"}} onClick={this.Next}> <FaArrowRight/> < /button></span>
-                     </div>
-                 form_fields.push(item)
+
+                    //   let test=<p style={{display:(this.state.filecount!=0) ? "block":"none"}}>Files selected:{this.state.filecount} </p>
+                    //  form_fields.push(test)
+                }
+            }
+            if (type == "document") {
+                type = "documents"
+            }
 
 
-                 //   let test=<p style={{display:(this.state.filecount!=0) ? "block":"none"}}>Files selected:{this.state.filecount} </p>
-                 //  form_fields.push(test)
-             }
-         }
 
         return (
             <div>

@@ -5,6 +5,11 @@ import { useHistory } from "react-router-dom";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import axios from "axios";
 import {getSchema, schemerequestInstance} from "../AnnotationSchemeAPI";
+import AnnotationDateEntry from "./AnnotationDateEntry";
+
+
+
+
 
 class Login extends Component {
     constructor(props) {
@@ -110,6 +115,7 @@ class Login extends Component {
 
     render() {
         return (
+
             <form onSubmit={this.handleSubmit}>
                 <h3>Sign In</h3>
      <div style={{display:(this.props.location.state==0) ? "block":"none"}}  className="alert alert-danger" role="alert">Wrong Credentials </div>
@@ -142,6 +148,15 @@ class Login extends Component {
                     <a href="/forget_password/">Forgot password?</a>
                 </p>
             </form>
+
+
+
+
+
+
+
+
+
         )
     }; // render()
 }

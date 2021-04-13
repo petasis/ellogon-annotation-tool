@@ -28,8 +28,25 @@ class App extends Component {
     }
 
     ReturnMain(){
-     this.props.history.push({
-                pathname: '/main'})
+    let access_token = localStorage.getItem('access_token');
+
+            let refresh_token = localStorage.getItem('refresh_token');
+            let remember = JSON.parse(localStorage.getItem("remember"));
+            if (access_token != null && refresh_token != null) {
+                let accesstokenParts = JSON.parse(atob(access_token.split('.')[1]));
+                let now = Math.ceil(Date.now() / 1000);
+                if (remember == true || accesstokenParts.exp > now) {
+                     this.props.history.push("/main");
+                }
+                else{
+                       this.props.history.push("/sign-in");
+                }
+
+            }
+
+
+     /*this.props.history.push({
+                pathname: '/main'})*/
 }
 
 
@@ -43,6 +60,7 @@ class App extends Component {
             localStorage.removeItem('refresh_token');
             localStorage.removeItem(('email'))
             localStorage.removeItem("remember");
+            localStorage.clear()
             requestInstance.defaults.headers['Authorization'] = null;
             this.props.history.push("/sign-in");
 
@@ -51,6 +69,10 @@ class App extends Component {
             console.log(e);
         }
     };
+
+
+
+
 
     componentDidMount() {
         let access_token  = localStorage.getItem('access_token');
@@ -63,12 +85,18 @@ class App extends Component {
 
             if (remember == false && accesstokenParts.exp < now) {
                 const response=this.handleLogout()
-            } else {
-                if (remember == true) {
+            }
+            else {
+               //if (remember == true) {
+
                     this.props.history.push("/main"); //go to current?
-                }
+              // }
             }
         }
+    }
+
+    componentDidUpdate(prevProps, prevState, snapshot) {
+        console.log("a")
     }
 
     render() {

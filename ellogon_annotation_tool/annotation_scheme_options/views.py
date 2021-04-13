@@ -1,8 +1,9 @@
 from django.http import HttpResponse
 from django.shortcuts import render
-
+import html
 # Create your views here.
 import requests
+from .response_parsers import *
 # base paths
 from django.views import View
 from rest_framework import status, permissions
@@ -83,23 +84,32 @@ class GetAttributes(APIView):
         r = requests.get(url)
         return Response(data={"attributes": r.json()}, status=status.HTTP_200_OK)
 
-class GetSchema(View):
+#class GetSchema(View):
+class GetSchema(APIView):
     permission_classes = (permissions.AllowAny, )
     authentication_classes = ()
 
 
     def get(self, request, type):
         data = request.GET.dict()
+        response={}
         if (type == "button"):
             url = "https://www.ellogon.org/clarin-ellogon-services/annotation_scheme_ui.tcl"
             params={"language":data["lang"],"annotation":data["type"],"attribute":data["attribute"],"alternative":data["attribute_alternative"]}
+            r = requests.get(url, params)
+            if(data["lang"]=="neutral" and data["type"]=="argument" and data["attribute"]=="type" and data["attribute_alternative"]=="Generic"):
+                response=parse_button_relation_response(r.text)
+            else:
+                response=parse_button_response(r.text)
         else:
             url ="https://www.ellogon.org/clarin-ellogon-services/annotation_scheme_multi_ui.tcl"
             params = {"language": data["lang"], "annotation": data["type"], "alternative": data["attribute_alternative"]}
-        r = requests.get(url,params)
-       # print(r.content)
-        return HttpResponse(r.text)
-        #return Response(data={"attribute_alternatives": r.json()}, status=status.HTTP_200_OK)
+            r = requests.get(url,params)
+            response=parsecorefresponse(r.text,params)
+
+        #print(r.content)
+       # return HttpResponse(html.unescape(r.text))
+        return Response(data={"ui_structure": response,"kind":type,"params":params}, status=status.HTTP_200_OK)
 
 
 

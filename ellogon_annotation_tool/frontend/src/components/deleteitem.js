@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import requestInstance from "../requestAPI";
 import { confirmAlert } from 'react-confirm-alert';
+import {Redirect} from "react-router-dom";
 
 class DeleteItem extends Component {
     constructor(props) {
@@ -83,7 +84,13 @@ class DeleteItem extends Component {
     }
 
     render() {
-        console.log(this.props.location.state)
+        if(this.props.location.state==null){
+
+                return <Redirect to='/sign-in' />
+            }
+
+
+
         const type = this.props.location.state.item
        // console.log(type)
         let message_params=[];

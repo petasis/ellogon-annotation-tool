@@ -364,7 +364,7 @@ try {
   handlers={handlers}
   id={'name'}
   parentId={'parentName'}></TreeList>
-
+        <span style={{display:(data.length==0)?"inline-block":"none",fontSize:"large",fontStyle:"italic",textAlign: 'center'}}>No project available</span>
                  <ControlledMenu anchorPoint={this.state.anchorPoint} isOpen={this.state.MenuOpen}
                 onClose={this.CloseMenu}>
                      {menuitems}
