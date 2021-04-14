@@ -60,6 +60,7 @@ class App extends Component {
             localStorage.removeItem('refresh_token');
             localStorage.removeItem(('email'))
             localStorage.removeItem("remember");
+            localStorage.clear()
             requestInstance.defaults.headers['Authorization'] = null;
             this.props.history.push("/sign-in");
 

@@ -28,7 +28,7 @@ class ButtonAnnotationSchema extends Component {
 
         return(
             <div id="x" className="button-widget-wrapper">
-                <table className="annotation-table  table">
+                <table className="table" >
                     <tbody>
                     {this.props.uielement}
                     </tbody>

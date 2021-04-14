@@ -5,24 +5,35 @@ import re
 
 def parse_button_response(response_text):
     s = html.unescape(response_text)
-    print(s)#?
-    # s = s.replace('"""', '"double-quote"')
-    # s1 = '''"Εισαγωγικα (", ', «, »)"'''
-    # s2 = '''"Εισαγωγικα (double-quote, ', «, »)"'''
-    # s = s.replace(s1, s2)
-    # s = s.replace("&", "+")  # greek,name,type
     soup = BeautifulSoup(s,features="html.parser")
     mydivs = soup.find_all("div", {"class": "button-widget-header"})
     data_headers = []
     record = {}
     id_numbers = []
+    daid=-1
     for h in mydivs:
         # print(h.parent.get("colspan"))
         # print(h.get("title"))
-        record = {"id": h.get("id"), "title": h.get("title"), "colspan": h.parent.get("colspan")}
-        data_headers.append(record)
-        id_number = re.match('.*?([0-9]+)$', h.get("id")).group(1)
-        id_numbers.append(int(id_number))
+        classes=h.get("class")
+        if(len(classes)==1 and classes[0]=="button-widget-header"):
+             record = {"id": h.get("id"), "title": h.get("title"), "colspan": h.parent.get("colspan")}
+             data_headers.append(record)
+             id_number = re.match('.*?([0-9]+)$', h.get("id")).group(1)
+             id_numbers.append(int(id_number))
+        else:
+            if("custom-values" in classes):
+                if(h.parent.get("colspan") is None):
+                    colspan_attr=mydivs[0].parent.get("colspan")
+                else:
+                    colspan_attr=h.parent.get("colspan")
+
+                record = {"id": h.get("id"), "title": h.get("title"), "colspan":colspan_attr ,"custom-value-add":True}
+                data_headers.append(record)
+            else:
+                if ("document_attributes" in classes):
+                    record = {"id": h.get("id"), "title": h.get("title"), "colspan": h.parent.get("colspan")}
+                    data_headers.append(record)
+                    daid=len(data_headers)-1
 
     try:
         col_total = int(mydivs[0].parent.get("colspan"))
@@ -39,6 +50,22 @@ def parse_button_response(response_text):
     annotation_dateentry = soup.find_all("annotation-dateentry")
     annotation_entries = soup.find_all("annotation-entry")
     annotation_comboboxes = soup.find_all("annotation-combobox")
+    annotation_text_labels = soup.find_all("annotation-text-label")
+
+    subheaders = []
+    for s in annotation_text_labels:
+        brecord = {"id": s.get("id"), "title": s.get("title"), "colspan": s.parent.get("colspan"), "type": "annotation-text-label"}
+        subheaders.append(brecord)
+    annotation_text_text = soup.find_all("annotation-text-text")
+    dtable=[]
+    for i in range(len(annotation_text_text)):
+        brecord = {"type": "document-attribute-table", "rows": []}
+        brecord["rows"].append(subheaders[i])
+        row = {"document_attribute": True,"title":annotation_text_text[i].get("annotation-value")}
+        brecord["rows"].append(row)
+        dtable.append(brecord)
+
+
     components = []
     for i in range(buttons_count):
         idx = re.match('.*?([0-9]+)$', mybuttons[i].get("id")).group(1)
@@ -60,6 +87,10 @@ def parse_button_response(response_text):
         idx = re.match('.*?([0-9]+)$', item.get("id")).group(1)
         brecord = {"id": int(idx), "type": "annotation-combobox", "colspan": item.parent.get("colspan")}
         components.append(brecord)
+
+
+
+
 
     sorted_components = sorted(components, key=lambda k: k['id'])
     brecord = {}
@@ -99,6 +130,8 @@ def parse_button_response(response_text):
     # print(len(elem_counts))
     try:
         data_headers[len(elem_counts)]["rows"] = []
+        if(daid!=-1):
+            data_headers[daid]["rows"]=dtable
     except IndexError:
 
             record= {"id": 0, "title": "►", "colspan":"5"}

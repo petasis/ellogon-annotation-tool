@@ -1,12 +1,13 @@
 import React, { Component } from "react";
 import requestInstance from "../requestAPI";
+import {Redirect} from "react-router-dom";
 
 class RenameItem extends Component {
     constructor(props) {
         super(props);
         this.state = {
             name:"",
-            item:this.props.location.state.item
+            item:""
         };
 
     this.handleChange=this.handleChange.bind(this)
@@ -101,23 +102,26 @@ handleClose(){
 
 
     componentDidMount(){
-
-         switch (this.state.item) {
+        if(this.props.location.state!=null){
+         switch (this.props.location.state.item) {
             case "document":
 
             this.setState({
                      name: this.props.location.state.filename,
+                    item:this.props.location.state.item
                              });
                 break;
             case "collection":
                  this.setState({
                      name: this.props.location.state.collection,
+                     item:this.props.location.state.item
                              });
                 break;
             case "project":
 
                     this.setState({
                      name: this.props.location.state.project,
+                      item:this.props.location.state.item
                              });
 
 
@@ -125,7 +129,7 @@ handleClose(){
             default:
 
         }
-       window.$('#RenameModal').modal('show')
+       window.$('#RenameModal').modal('show')}
 
 
 
@@ -137,6 +141,14 @@ handleClose(){
     }
 
     render(){
+
+
+      if(this.props.location.state==null){
+
+                return <Redirect to='/sign-in' />
+            }
+
+
        // console.log(this.props.location.state)
         return (
             <div>

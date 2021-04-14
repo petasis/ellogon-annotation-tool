@@ -15,6 +15,8 @@ import Typography from '@material-ui/core/Typography';
 import Paper from '@material-ui/core/Paper';
 import KeyboardArrowDownIcon from '@material-ui/icons/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@material-ui/icons/KeyboardArrowUp';
+import {FaMinusCircle} from "react-icons/fa";
+import {Button} from "@material-ui/core";
 const useRowStyles = makeStyles({
   root: {
     '& > *': {
@@ -27,6 +29,18 @@ function Row(props) {
   const { row } = props;
   const [open, setOpen] = React.useState(false);
   const classes = useRowStyles();
+  const DeleteRecord=(index)=> {
+        let type="annotation"
+        if(index>=props.count){
+            type="document_attribute"
+        }
+        //console.log(type)
+       props.Delete(index,type)
+
+  }
+
+
+
 
   return (
     <React.Fragment>
@@ -37,12 +51,25 @@ function Row(props) {
           </IconButton>
         </TableCell>
         <TableCell component="th" scope="row">
-          {row.name}
+          {row.id}
         </TableCell>
-        <TableCell align="right">{row.id}</TableCell>
         <TableCell align="right">{row.from}</TableCell>
         <TableCell align="right">{row.to}</TableCell>
         <TableCell align="right">{row.type}</TableCell>
+          <TableCell align="right">
+              <Button color="secondary">
+                <FaMinusCircle
+                        onClick={() => DeleteRecord(row.id)}
+
+
+
+                />
+
+              </Button>
+
+
+          </TableCell>
+
       </TableRow>
       <TableRow>
         <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>
@@ -59,16 +86,19 @@ function Row(props) {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {row.history.map((historyRow) => (
-                    <TableRow key={historyRow.date}>
+                  {row.detail.map((historyRow) => (
+                    <TableRow>
                       <TableCell component="th" scope="row">
-                        {historyRow.date}
+                        {historyRow.name}
                       </TableCell>
-                      <TableCell>{historyRow.customerId}</TableCell>
-                      <TableCell align="right">{historyRow.amount}</TableCell>
-                      <TableCell align="right">
-                        {Math.round(historyRow.amount * row.price * 100) / 100}
-                      </TableCell>
+                      <TableCell>
+                          <span style={{display:(historyRow.name=="Document Segment")?"inline-block":"none"}}> <textarea style={{marginTop:"4%",resize:"both"}}  readOnly={true}
+                                                                                                         value={historyRow.value}></textarea>
+                          </span>
+                          <span style={{display:(!(historyRow.name=="Document Segment"))?"inline-block":"none"}}> {historyRow.value}
+                          </span>
+
+                          </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -81,23 +111,7 @@ function Row(props) {
   );
 }
 
-Row.propTypes = {
-  row: PropTypes.shape({
-    calories: PropTypes.number.isRequired,
-    carbs: PropTypes.number.isRequired,
-    fat: PropTypes.number.isRequired,
-    history: PropTypes.arrayOf(
-      PropTypes.shape({
-        amount: PropTypes.number.isRequired,
-        customerId: PropTypes.string.isRequired,
-        date: PropTypes.string.isRequired,
-      }),
-    ).isRequired,
-    name: PropTypes.string.isRequired,
-    price: PropTypes.number.isRequired,
-    protein: PropTypes.number.isRequired,
-  }).isRequired,
-};
+
 
 
 
@@ -110,8 +124,10 @@ class AnnotationsView extends Component {
         };
 
     this.handleChange=this.handleChange.bind(this)
+    this.Delete=this.Delete.bind(this)
     this.handleClose=this.handleClose.bind(this)
     this.defineAnnnotatorId=this.defineAnnnotatorId.bind(this)
+    this.CreateButtonAnnotationList=this.CreateButtonAnnotationList.bind(this)
         this.displayannotationcontent=this.displayannotationcontent.bind(this)
     }
 
@@ -129,7 +145,15 @@ handleClose(){
 
 
 
-
+Delete(index,type){
+       this.props.DeleteAnnotation(index,type)
+        let data = this.CreateButtonAnnotationList()
+        //console.log(data.length)
+        //let data=this.state.data
+      //  data.splice(index, 1);
+       //console.log(data)
+        this.setState({data:data})
+}
 
     //console.log(response)
 
@@ -150,14 +174,64 @@ handleClose(){
         return annotator_id
     }
 
+    CreateButtonAnnotationList(){
+        let record = null
+        let data = []
+      //  console.log(this.props.annotation_properties)
+        for (let i = 0; i < this.props.annotations.length; i++) {
+            record = {
+                id: i,
+                from: "line: " + this.props.annotations[i].start.line + "," + "character: " + this.props.annotations[i].start.ch,
+                to: "line: " + this.props.annotations[i].end.line + "," + "character: " + this.props.annotations[i].end.ch,
+                type: this.props.annotator_params["params"].annotation,
+                detail:[{name:"ID",value:i},{name:"Type",value:this.props.annotator_params["params"].annotation},
+                    {name:"Annotator ID",value:this.defineAnnnotatorId()}, {name:"Document Segment",value:this.props.annotation_contents[i]},
+                    {name:"Attribute",value:this.props.annotation_labels[i]+"("+this.props.annotation_titles[i]+")"}]}
+               if(this.props.annotation_properties[i]!=""){
+
+                        record["detail"].push({name:"",value:this.props.annotation_properties[i]})
+
+               }
 
 
+               data.push(record)
+
+            record={}
+        }
+       // for(let i=0;)
+        let j=this.props.annotations.length
+        for (const [key, value] of Object.entries(this.props.document_attributes)) {
+            record={id:j,from:"",to:"",type: this.props.annotator_params["params"].annotation,
+                detail:[{name:"ID",value:j},{name:"Type",value:this.props.annotator_params["params"].annotation},
+                    {name:"Annotator ID",value:this.defineAnnnotatorId()}, {name:"Document Attribute",value:key},
+                    {name:"Attribute",value:"document "+key},{name:"",value:key+":"+value}]}
+                data.push(record)
+                j=j+1
+                record={}
+
+            }
+
+
+
+
+
+
+
+       // console.log(data)
+        return data
+
+
+
+
+
+    }
 
 
 
     componentDidMount() {
         if(this.props.viewshow==true){
-         const annotator_id=this.defineAnnnotatorId()
+             let data = this.CreateButtonAnnotationList()
+       /*  const annotator_id=this.defineAnnnotatorId()
             this.setState({annotator_id:annotator_id})
 
         let data = []
@@ -171,16 +245,22 @@ handleClose(){
                 parentId: null
             }
             data.push(record)
-        }
+        }*/
         this.setState({data:data})
         window.$('#AnnotationsView').modal('show')
 
         }
+
+
+
+
     }
 
  componentDidUpdate(prevProps, prevState, snapshot) {
         if(this.props.viewshow==true && prevProps.viewshow==false){
-            const annotator_id=this.defineAnnnotatorId()
+             let data = this.CreateButtonAnnotationList()
+
+           /* const annotator_id=this.defineAnnnotatorId()
             this.setState({annotator_id:annotator_id})
         let data = []
         let record = null
@@ -195,9 +275,17 @@ handleClose(){
             data.push(record)
 
 
-        }
+        }*/
+          //console.log("Deleted")
+         this.setState({data:data})
         window.$('#AnnotationsView').modal('show')
-        this.setState({data:data})}
+      }
+        //console.log("alex")
+
+
+
+
+
     }
 
 
@@ -214,8 +302,14 @@ displayannotationcontent(row) {
     }
 
 }
-    render() {
 
+
+
+
+
+
+    render() {
+      //  console.log(this.props.annotations.length)
 
 
 
@@ -225,7 +319,7 @@ displayannotationcontent(row) {
 
 
 // αnnotation_list
-    const columns= [{
+   /* const columns= [{
 
       title: 'AnnotationId',
       field: 'id',
@@ -275,8 +369,41 @@ displayannotationcontent(row) {
       type: 'string',
     //  width: 100
     }]
+*/
 
+    //annotation_list table
+        let annotation_list=null
+        if(data.length>0){
+            annotation_list=  <TableContainer component={Paper}>
+                                 <Table aria-label="collapsible table">
+                                     <TableHead>
+                                     <TableRow>
+                                     <TableCell />
+            <TableCell>AnnotationId</TableCell>
+            <TableCell align="right">From</TableCell>
+            <TableCell align="right">To</TableCell>
+            <TableCell align="right">Type</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {data.map((row) => (
+            <Row count={this.props.annotations.length}
 
+                 Delete={this.Delete} row={row} />
+          ))}
+        </TableBody>
+      </Table>
+    </TableContainer>
+        }
+        else{
+             annotation_list=  <TableContainer component={Paper}>
+             <Table></Table>
+             <TableBody>
+                 <TableCell>The document has not annotations</TableCell>
+                  </TableBody>
+             </TableContainer>
+
+        }
 
 
 
@@ -297,7 +424,13 @@ displayannotationcontent(row) {
                             </div>
 
                                   <div className="modal-body">
-                                         <TreeList
+
+
+                                          {annotation_list}
+
+
+
+                                          {/*    <TreeList
                                              data={data}
                                              columns={columns}
                                              options={options}
@@ -307,8 +440,8 @@ displayannotationcontent(row) {
 
                                 <textarea style={{marginTop:"4%",resize:"both"}}  readOnly={true}
                                         value={this.state.textAreaValue}
+*/}
 
-                                         />
 
 
                             </div>

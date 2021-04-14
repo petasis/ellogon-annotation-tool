@@ -38,13 +38,18 @@ class AnnotationButton extends Component {
 
         this.props.SetMarkedColor(this.props.color,this.props.label,this.props.title)
     }
-componentDidUpdate(prevProps, prevState, snapshot)
+
+
+    componentDidUpdate(prevProps, prevState, snapshot)
 
         {
 
             if (this.props.markedfield!=prevProps.markedfield){
                 if (this.props.markedfield==this.props.label){
-             this.setState({background_color:this.props.markedcolor})
+
+                    this.setState({background_color:this.props.color})
+
+            // this.setState({background_color:this.props.markedcolor})
 
         }
         else{
@@ -59,7 +64,10 @@ componentDidUpdate(prevProps, prevState, snapshot)
 
 
 
-        }
+
+
+            }
+
 
 
     render(){
@@ -69,7 +77,7 @@ componentDidUpdate(prevProps, prevState, snapshot)
         return(
             <td style={{backgroundColor:this.state.background_color}}onMouseOver={this.onselect} onMouseOut={this.ondeselect} onClick={this.onclick}>
             <button type="button" title={this.props.title} className="btn btn-default btn-sm btn-block annotation-btn"
-                style={{backgroundColor:this.state.background_color}}
+                style={{backgroundColor:(this.props.markedfield==this.props.label)?this.props.color: this.state.background_color}}
 
                     label= {this.props.label}>
                 <span style={{backgroundColor:this.state.background_color,float:"left"}}>
