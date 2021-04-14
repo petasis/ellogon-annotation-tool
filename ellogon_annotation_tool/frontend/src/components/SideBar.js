@@ -273,12 +273,12 @@ try {
           return (
             <ProSidebar collapsed={this.state.collapsed} onMouseEnter={() =>this.collapseSidebar(false)} onMouseLeave={() =>this.collapseSidebar(true)}>
   <SidebarHeader>
-  <img src={logo} alt="ELlogon Logo" width="50" height="50"/>
+  <img className="logoIcon"  src={logo} alt="ELlogon Logo" />
   </SidebarHeader>
   <SidebarContent>
        <Menu iconShape="square">
     <MenuItem icon={<FaUserEdit />} >Manage Profile
-    <Link  to={"/manage_profile"}></Link>
+    <Link  to={"/user/profile_manage"}></Link>
 
     </MenuItem>
     <MenuItem icon={<FaSignOutAlt />} onClick={this.props.handleLogout}>Logout</MenuItem>

@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import requestInstance from "../requestAPI";
 
 import AnnotationSchemeSelection from "./Define_annotation";
-class RenameItem extends Component {
+class SelectAnnotationSchema extends Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -18,7 +18,7 @@ class RenameItem extends Component {
 
 
 handleClose(){
-        this.props.HideSchemaForm()
+        this.props.HideSchemaForm("schema")
         window.$('#AnnotationSchemaModal').modal('hide')
 }
 
@@ -126,4 +126,4 @@ componentDidUpdate(prevProps, prevState, snapshot) {
     }
 }
 
-export default RenameItem;
+export default SelectAnnotationSchema;

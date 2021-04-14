@@ -28,8 +28,25 @@ class App extends Component {
     }
 
     ReturnMain(){
-     this.props.history.push({
-                pathname: '/main'})
+    let access_token = localStorage.getItem('access_token');
+
+            let refresh_token = localStorage.getItem('refresh_token');
+            let remember = JSON.parse(localStorage.getItem("remember"));
+            if (access_token != null && refresh_token != null) {
+                let accesstokenParts = JSON.parse(atob(access_token.split('.')[1]));
+                let now = Math.ceil(Date.now() / 1000);
+                if (remember == true || accesstokenParts.exp > now) {
+                     this.props.history.push("/main");
+                }
+                else{
+                       this.props.history.push("/sign-in");
+                }
+
+            }
+
+
+     /*this.props.history.push({
+                pathname: '/main'})*/
 }
 
 
@@ -52,6 +69,10 @@ class App extends Component {
         }
     };
 
+
+
+
+
     componentDidMount() {
         let access_token  = localStorage.getItem('access_token');
         let refresh_token = localStorage.getItem('refresh_token');
@@ -63,12 +84,18 @@ class App extends Component {
 
             if (remember == false && accesstokenParts.exp < now) {
                 const response=this.handleLogout()
-            } else {
-                if (remember == true) {
+            }
+            else {
+               //if (remember == true) {
+
                     this.props.history.push("/main"); //go to current?
-                }
+              // }
             }
         }
+    }
+
+    componentDidUpdate(prevProps, prevState, snapshot) {
+        console.log("a")
     }
 
     render() {
@@ -88,7 +115,8 @@ class App extends Component {
             //<Router>
                 <div className="App" style={{display: "flex",backgroundColor:bcolor}}>
                 
-                    <div id="sidebar" className="sidebar_height" style={{display:(login_status) ? "block":"none"}}> <SideBar login_status={login_status}  handleLogout={this.handleLogout} />
+                    <div id="sidebar" className="sidebar_height" style={{display:(login_status) ? "block":"none"}}>
+                        <SideBar login_status={login_status}  handleLogout={this.handleLogout} />
                     </div>
                     <nav className="navbar navbar-expand-lg navbar-light fixed-top" style={{display:(!login_status) ? "block":"none"}}>
                  

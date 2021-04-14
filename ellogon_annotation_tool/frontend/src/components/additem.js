@@ -294,6 +294,7 @@ fileDrop(event) {
 
 
     componentDidMount(){
+
         // It's not the most straightforward thing to run an async method in componentDidMount
        // window.addEventListener('onbeforeunload', this.props.handleWindowClose);
 
@@ -304,8 +305,19 @@ fileDrop(event) {
 
 
 
-    render(){
-       let type=this.props.location.state.item
+    render() {
+       // if (this.location.state)
+        /*try {
+            let type = this.props.location.state.item
+        } catch (err) {
+
+        }*/
+        /*if (this.props.location.state===undefined){
+            this.props.ReturnMain()
+        }
+        */
+        let type = this.props.location.state.item
+
         let submitview
         if(type=="project" ||type=="collection"){
             submitview=true
@@ -393,6 +405,11 @@ let documentbrowser=<div className="form-group">
                  //  form_fields.push(test)
              }
          }
+        if (type=="document"){
+            type="documents"
+        }
+
+
 
         return (
             <div>

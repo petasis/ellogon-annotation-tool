@@ -12,8 +12,8 @@ import {
     getTypes, getValues,
     schemerequestInstance
 } from "../AnnotationSchemeAPI";
-//import {schemerequestInstance,getLanguages, getTypes, getAttributes, getAttributeAlternatives, getValues, getCoreferenceAttributes
-//} from "../AnnotationSchemeAPI"
+
+
 const useStyles = makeStyles((theme) => ({
     button: {
         display: 'inline',
@@ -39,9 +39,8 @@ const useStyles = makeStyles((theme) => ({
         maxWidth: 700,
     },
     titleStyle:{
-color: 'red',
-// fontSize: 20,
-},
+        color: 'red',
+    },
 }));
 
 // switches content according to selected tab
@@ -60,18 +59,11 @@ function TabPanel(props) {
 function ItemRenderer(props){
      const item = this.props.data[this.props.index];
      return (
-
       <div style={this.props.style}>
-
         {item}
-
       </div>
-
-    );
-
-  }
-
-
+     );
+}
 
 const rowValue = ({ index, style }) => (
   <div style={style}>Value {index}</div>
@@ -85,38 +77,78 @@ export default function AnnotationSchemeSelection(props) {
     const [languages,setLanguages]=React.useState([]);
     const [annotationtypes,setTypes]=React.useState([])
     const [annotationattributes,setAttributes]=React.useState([])
-     const [attribute_alternatives,setAttributeAlternatives]=React.useState([])
-     const [values,setValues]=React.useState([])
+    const [attribute_alternatives,setAttributeAlternatives]=React.useState([])
+    const [values,setValues]=React.useState([])
     const [coreferenceattributes,setCoreferenceAttributes]=React.useState([])
     const [tabValue, setTabValue] = React.useState(0);
     const [b_language, setLanguageB] = React.useState('');
     const [b_annotationType, setAnnotationTypeB] = React.useState('');
+    // const [b_annotationTypeRequired, setAnnotationTypeRequiredB] = React.useState(true);
     const [b_annotationAttribute, setAnnotationAttributeB] = React.useState('');
+    // const [b_annotationAttributeRequired, setAnnotationAttributeRequiredB] = React.useState(true);
     const [b_attributeAlternative, setAttributeAlternativeB] = React.useState('');
+    // const [b_attributeAlternativeRequired, setAttributeAlternativeRequiredB] = React.useState(true);
     const [c_language, setLanguageC] = React.useState('');
     const [c_annotationType, setAnnotationTypeC] = React.useState('');
     const [c_attributeAlternative, setAttributeAlternativeC] = React.useState('');
-   // let languages=[]
-  //  let annotation_attribute_state=true
-  const getlanguages=(type)=>{
-      setMode(type)
-      let   r=getLanguages(schemerequestInstance,type).then(x => {
-                     //console.log(x);
-                     setLanguages(x["languages"])
-            })
-      //  console.log(languages)
+    const [req,setReq] = React.useState(true);
+    const [e1,setE1] = React.useState(false);
+    const [e2,setE2] = React.useState(false);
+    const [e3,setE3] = React.useState(false);
+    const [e4,setE4] = React.useState(false);
+    const [e5,setE5] = React.useState(false);
+    const [e6,setE6] = React.useState(false);
+    const [e7,setE7] = React.useState(false);
+
+
+
+    const getCurrentState=(type)=>{
+        getlanguages(type)
+        if (type=="button" && b_language!=''){
+            setLanguageB(b_language)
+            setAnnotationTypeB(b_annotationType)
+            setAnnotationAttributeB(b_annotationAttribute)
+            setAttributeAlternativeB(b_attributeAlternative)
+            gettypes("button",b_language)
+            getannotationattributes(b_annotationType)
+            getannotationalternatives(type,b_annotationAttribute)
+            getvalues(b_attributeAlternative)
+        }
+        else{
+            if(c_language!=''){
+                gettypes("coreference",c_language)
+                getannotationalternatives(type,c_annotationType)
+                getcoreferenceattirbutes(c_attributeAlternative)}
+        }
+    }
+
+
+    const getlanguages=(type)=>{
+        setMode(type)
+        let   r=getLanguages(schemerequestInstance,type).then(x => {
+            //console.log(x);
+            setLanguages(x["languages"])
+        })
+      //console.log(languages)
     }
 
 
 
 // first time
-
 const gettypes=(type,lang)=>{
 
        // let lang=getlang(type)
          console.log(b_language)
          let   r=getTypes(schemerequestInstance,type,lang).then(x => {
                      console.log(x);
+
+                     if (x["annotation_types"].length==0){
+                         // setAnnotationTypeRequiredB(false)
+                         setReq(false)
+                     }
+                     else{
+                         setReq(true)
+                     }
                     setTypes(x["annotation_types"])
             })
     }
@@ -126,9 +158,17 @@ const gettypes=(type,lang)=>{
        // let lang=getlang(type)
        //  console.log(b_language)
          let   r=getAttributes(schemerequestInstance,"button",b_language,annotation_type).then(x => {
-                   //  console.log(x);
+                   if (x["attributes"].length==0){
+                         // setAnnotationAttributeRequiredB(false)
+                       setReq(false)
+                     }
+                   else{
+                       setReq(true)
+                   }
                    setAttributes(x["attributes"])
             })
+
+
     }
 
     const getannotationalternatives=(type,p)=>{
@@ -146,6 +186,19 @@ const gettypes=(type,lang)=>{
             }
              let   r=getAttributeAlternatives(schemerequestInstance,type,language,annotation_type,attribute).then(x => {
                      console.log(x);
+                      // if (type=="button"){
+
+                         if (x["alternatives"].length==0){
+                             console.log("ola")
+                         // setAttributeAlternativeRequiredB(false)
+                             setReq(false)
+                         }
+                         else {
+                             setReq(true)
+                         }
+                      // }
+
+
                     setAttributeAlternatives(x["alternatives"])
             })
     }
@@ -180,6 +233,14 @@ const getcoreferenceattirbutes=(p)=>{
                             attributes.push(x["attributes"][j].attribute)
 }
 
+                     if (x["attributes"].length==0){
+                         // setAnnotationTypeRequiredB(false)
+                         setReq(false)
+                     }
+                     else{
+                         setReq(true)
+                     }
+
                    setCoreferenceAttributes(attributes)
             })
     }
@@ -190,40 +251,65 @@ const getcoreferenceattirbutes=(p)=>{
     }
 
     const handleLanguageB = (event) => {
+        setE1(true)
         setLanguageB(event.target.value)
+        setAnnotationTypeB("")
+        setAnnotationAttributeB("")
+        setAttributeAlternativeB("")
+        setValues([])
         //console.log()
         gettypes("button",event.target.value)
         //console.log(languages)
     }
 
     const handleLanguageC = (event) => {
+        setE5(true)
         setLanguageC(event.target.value)
+        setAnnotationTypeC("")
+        setAttributeAlternativeC("")
+        setCoreferenceAttributes([])
         gettypes("coreference",event.target.value)
     }
 
     const handleAnnotationTypeB = (event) => {
+        setE2(true)
         setAnnotationTypeB(event.target.value)
+        setAnnotationAttributeB("")
+        setAttributeAlternativeB("")
+        setValues([])
         getannotationattributes(event.target.value)
     }
 
     const handleAnnotationTypeC = (event) => {
+        setE6(true)
         setAnnotationTypeC(event.target.value)
+         setAttributeAlternativeC("")
+        setCoreferenceAttributes([])
         getannotationalternatives("coreference", event.target.value)
     }
 
     const handleAnnotationAttributeB = (event) => {
+        setE3(true)
         setAnnotationAttributeB(event.target.value)
+        setAttributeAlternativeB("")
+        setValues([])
         getannotationalternatives("button", event.target.value)
     }
 
     const handleAttributeAlternativeB = (event) => {
+        setE4(true)
         setAttributeAlternativeB(event.target.value)
         getvalues(event.target.value)
     }
 
     const handleAttributeAlternativeC = (event) => {
+        setE7(true)
         setAttributeAlternativeC(event.target.value)
         getcoreferenceattirbutes(event.target.value)
+    }
+
+    const handleReqChange = (event) => {
+        setReq(event.target.value)
     }
 
   const AttrValue = ({ index, style }) => (
@@ -242,169 +328,150 @@ const Submit=(event) =>{
          r=getSchema(schemerequestInstance,mode,b_language,b_annotationType,b_annotationAttribute,b_attributeAlternative).then(x => {
                 props.SelectMyAnnotationScheme(x)
         })
-
     }
     else{
         r=getSchema(schemerequestInstance,mode,c_language,c_annotationType,"",c_attributeAlternative).then(x => {
                 props.SelectMyAnnotationScheme(x)
         })
     }
-
-
+    console.log(mode)
     props.handleClose()
 }
 
 
 
 
-useEffect(() => {
-
- getlanguages("button")
-
-
- }, []);
-
-
-/*
-useEffect(() => {
-
-        getlanguages("button")
-
-      });*/
+useEffect(() => { getlanguages("button")}, []);
 
  return (
         <div>
             <AppBar position="static">
                 <Tabs value={tabValue} onChange={handleTabChange}>
-                    <Tab label="Button Annotator"  onClick={() => getlanguages("button")}    />{/*disabled>*/}
-                    <Tab label="Coreference Annotator" onClick={() => getlanguages("coreference")}/>
+                    <Tab label="Button Annotator"  onClick={() => getCurrentState("button")}    />{/*disabled>*/}
+                    <Tab label="Coreference Annotator" onClick={() => getCurrentState("coreference")}/>
                 </Tabs>
             </AppBar>
             <TabPanel value={tabValue} index={0}> {/*0 stands for Button Annotator / 1 for Coreference Annotator*/}
                 {/*Button Annotator language*/}
-                <FormControl className={classes.formControl}>
-                    <InputLabel>Language</InputLabel>
-                    <Select value={b_language} onChange={handleLanguageB}>
-                        <MenuItem value="">
-                            <em>Please select language</em>
-                        </MenuItem>
-                         {languages.map((value, index) => {
-                    return <MenuItem value={value}>{value}</MenuItem>
-      })}
-                        {/*} <MenuItem value={"greek"}>
-                            Greek
-                        </MenuItem>
-                        <MenuItem value={"english"}>
-                            English
-                        </MenuItem>*/}
-                    </Select>
-                </FormControl>
-                {/*Button Annotator Annotation Type*/}
-                <FormControl className={classes.formControl}>
-                    <InputLabel>Annotation Type</InputLabel>
-                    <Select value={b_annotationType}   onChange={handleAnnotationTypeB}>
-                        <MenuItem value="">
-                            <em>Please select annotation type</em>
-                        </MenuItem>
-                          {annotationtypes.map((value, index) => {
-                    return <MenuItem value={value}>{value}</MenuItem>
-      })}
-
-
-
-                    </Select>
-                </FormControl>
-                {/*Button Annotator Annotation Attribute*/}
-                <FormControl className={classes.formControl} >{/*disabled>*/}
-                    <InputLabel>Annotation Attribute</InputLabel>
-                    <Select value={b_annotationAttribute} onChange={handleAnnotationAttributeB}>
-                        <MenuItem value="">
-                            <em>Please select annotation attribute</em>
-                        </MenuItem>
-                       {annotationattributes.map((value, index) => {
-                    return <MenuItem value={value}>{value}</MenuItem>
-      })}
-                    </Select>
-                </FormControl>
-                {/*Button Annotator Attribute Alternative*/}
-                <FormControl className={classes.formControl}>
-                    <InputLabel>Attribute Alternative</InputLabel>
-                    <Select value={b_attributeAlternative} onChange={handleAttributeAlternativeB}>
-                        <MenuItem value="">
-                            <em>Please select attribute alternative</em>
-                        </MenuItem>
-                        {attribute_alternatives.map((value, index) => {
-                    return <MenuItem value={value}>{value}</MenuItem>
-      })}
-
-
-
-                    </Select>
-                </FormControl>
-                <div className={classes.root}>
-                    <h6>Annotation Values:</h6>
-                    <FixedSizeList height={120} width={200} itemSize={30} itemCount={values.length}>
-                      {ValValue}
-                    </FixedSizeList>
-                </div>
+                <form onSubmit={Submit}>
+                    <FormControl className={classes.formControl} required={req}>
+                        <InputLabel shrink={e1}>Language</InputLabel>
+                        <Select value={b_language} onChange={handleLanguageB}
+                                displayEmpty={e1}>
+                                {/*/!*onBlur={(e) => {setE1(true)}}>*!/ an theloume na fainetai to select language*/}
+                            <MenuItem value="" disabled={true}>
+                                <em>Please select language</em>
+                            </MenuItem>
+                            {languages.map((value, index) => {
+                                return <MenuItem value={value}>{value}</MenuItem>
+                            })}
+                        </Select>
+                    </FormControl>
+                    {/*Button Annotator Annotation Type*/}
+                    <FormControl className={classes.formControl} required={req}>
+                        <InputLabel shrink={e2}>Annotation Type</InputLabel>
+                        <Select value={b_annotationType}   onChange={handleAnnotationTypeB}
+                                displayEmpty={e2}>
+                            <MenuItem value="" disabled={true}>
+                                <em>Please select annotation type</em>
+                            </MenuItem>
+                              {annotationtypes.map((value, index) => {
+                                  return <MenuItem value={value}>{value}</MenuItem>
+                              })}
+                        </Select>
+                    </FormControl>
+                    {/*Button Annotator Annotation Attribute*/}
+                    <FormControl className={classes.formControl} required={req}>{/*disabled>*/}
+                        <InputLabel shrink={e3}>Annotation Attribute</InputLabel>
+                        <Select value={b_annotationAttribute} onChange={handleAnnotationAttributeB}
+                                displayEmpty={e3}>
+                            <MenuItem value="" disabled={true}>
+                                <em>Please select annotation attribute</em>
+                            </MenuItem>
+                            {annotationattributes.map((value, index) => {
+                                return <MenuItem value={value}>{value}</MenuItem>
+                            })}
+                        </Select>
+                    </FormControl>
+                    {/*Button Annotator Attribute Alternative*/}
+                    <FormControl className={classes.formControl} required={req}>
+                        <InputLabel shrink={e4}>Attribute Alternative</InputLabel>
+                        <Select value={b_attributeAlternative} onChange={handleAttributeAlternativeB}
+                                displayEmpty={e4}>
+                            <MenuItem value="" disabled={true}>
+                                <em>Please select attribute alternative</em>
+                            </MenuItem>
+                            {attribute_alternatives.map((value, index) => {
+                                return <MenuItem value={value}>{value}</MenuItem>
+                            })}
+                        </Select>
+                    </FormControl>
+                    <div className={classes.root}>
+                        <h6>Annotation Values:</h6>
+                        <FixedSizeList height={120} width={200} itemSize={30} itemCount={values.length}>
+                          {ValValue}
+                        </FixedSizeList>
+                    </div>
+                    <div className={classes.myButtons}>
+                        <Button className={classes.button} variant="outlined" color="secondary" onClick={props.handleClose}>Cancel</Button>
+                        <Button type="submit" className={classes.button} variant="outlined" color="secondary">Submit</Button>
+                    </div>
+                </form>
             </TabPanel>
+
             <TabPanel value={tabValue} index={1}>
+                <form onSubmit={Submit}>
                 {/*Coreference Annotator language*/}
-                <FormControl className={classes.formControl}>
-                    <InputLabel>Language</InputLabel>
-                    <Select value={c_language} onChange={handleLanguageC}>
-                        <MenuItem value="">
+                <FormControl className={classes.formControl} required={req}>
+                    <InputLabel shrink={e5}>Language</InputLabel>
+                    <Select value={c_language} onChange={handleLanguageC}
+                            displayEmpty={e5}>
+                        <MenuItem value="" disabled={true}>
                             <em>Please select language</em>
                         </MenuItem>
                         {languages.map((value, index) => {
-                    return <MenuItem value={value}>{value}</MenuItem>
-      })}
+                            return <MenuItem value={value}>{value}</MenuItem>
+                        })}
                     </Select>
                 </FormControl>
                 {/*Coreference Annotator Annotation Type*/}
-                <FormControl className={classes.formControl}>
-                    <InputLabel>Annotation Type</InputLabel>
-                    <Select value={c_annotationType} onChange={handleAnnotationTypeC}>
-                        <MenuItem value="">
+                <FormControl className={classes.formControl} required={req}>
+                    <InputLabel shrink={e6}>Annotation Type</InputLabel>
+                    <Select value={c_annotationType} onChange={handleAnnotationTypeC}
+                            displayEmpty={e6}>
+                        <MenuItem value="" disabled={true}>
                             <em>Please select annotation type</em>
                         </MenuItem>
-                            {annotationtypes.map((value, index) => {
-                    return <MenuItem value={value}>{value}</MenuItem>
-      })}
-
+                        {annotationtypes.map((value, index) => {
+                            return <MenuItem value={value}>{value}</MenuItem>
+                        })}
                     </Select>
                 </FormControl>
                 {/*Coreference Annotator Attribute Alternative*/}
-                <FormControl className={classes.formControl}>
-                    <InputLabel>Attribute Alternative</InputLabel>
-                    <Select value={c_attributeAlternative} onChange={handleAttributeAlternativeC}>
-                        <MenuItem value="">
+                <FormControl className={classes.formControl} required={req}>
+                    <InputLabel shrink={e7}>Attribute Alternative</InputLabel>
+                    <Select value={c_attributeAlternative} onChange={handleAttributeAlternativeC}
+                            displayEmpty={e7}>
+                        <MenuItem value="" disabled={true}>
                             <em>Please select attribute alternative</em>
                         </MenuItem>
                        {attribute_alternatives.map((value, index) => {
-                    return <MenuItem value={value}>{value}</MenuItem>
-                                })}
-
-
-
-
+                           return <MenuItem value={value}>{value}</MenuItem>
+                       })}
                     </Select>
                 </FormControl>
                 <div className={classes.root}>
                     <h6>Annotation Attributes:</h6>
-
                        <FixedSizeList height={120} width={200} itemSize={30} itemCount={coreferenceattributes.length}>
-
                              {AttrValue}
-
                     </FixedSizeList>
                 </div>
+                <div className={classes.myButtons}>
+                    <Button className={classes.button} variant="outlined" color="secondary" onClick={props.handleClose}>Cancel</Button>
+                    <Button type="submit" className={classes.button} variant="outlined" color="secondary">Submit</Button>
+                </div>
+                </form>
             </TabPanel>
-        <div className={classes.myButtons}>
-            <Button className={classes.button} variant="outlined" color="secondary" onClick={props.handleClose}>Cancel</Button>
-            <Button className={classes.button} variant="outlined" color="secondary" onClick={Submit}>Submit</Button>
         </div>
-    </div>
     );
-
 }

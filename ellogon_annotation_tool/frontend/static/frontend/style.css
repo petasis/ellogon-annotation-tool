@@ -5,11 +5,11 @@
 }
 body {
  /* background: #1C8EF9 !important;*/
-  min-height: 100vh;
+  max-height: 100vh;
   display: flex;
   font-weight: 400;
   font-family: 'Fira Sans', sans-serif;
-
+  /*overflow: hidden;*/
 }
 
 h1,h2,h3,h4,h5,h6,label,span {
@@ -127,4 +127,23 @@ position: -webkit-sticky; /* Safari */
 
   background-color:seashell;
 
+}
+
+.password-icon{
+  position: absolute;
+  top: 51.3%;
+  right: 42%;
+}
+
+.logoIcon{
+  width: 50px;
+  height: 50px;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.annotation-table td{
+  padding: .3rem;
+  vertical-align: top;
 }
