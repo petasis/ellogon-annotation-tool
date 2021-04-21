@@ -1,20 +1,25 @@
 import React, { Component } from "react";
+import ReactDOM from 'react-dom';
 import requestInstance from "../requestAPI";
 import {UnControlled as CodeMirror} from 'react-codemirror2'
 import {FaTimes} from "react-icons/fa";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {ProSidebar} from "react-pro-sidebar";
 import AnnotationsView from "./AnnotationsView";
-import Define_annotation from "./Define_annotation"
+
 import SelectAnnotationSchema from "./SelectAnnotationSchema";
 import Annotator from "./Annotator";
 import AddCustomValue from "./AddCustomValue";
 import {Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle} from "@material-ui/core";
+import TableBody from "@material-ui/core/TableBody";
+import Xarrow from "react-xarrows";
 
 class DocumentViewer extends Component {
     constructor(props) {
         super(props);
         //  this.annotator = React.createRef();
+        this.editorref=React.createRef();
+
         this.state = {
             filename: "",
             text: "",
@@ -47,7 +52,9 @@ class DocumentViewer extends Component {
             autosave: false,
             closewarning: false,
             showCoref:false,
-            corefC:0
+            corefC:0,
+            relation_attributes:[],
+            relation_arrows:[]
 
 
         }
@@ -74,8 +81,82 @@ class DocumentViewer extends Component {
         this.handleChanges=this.handleChanges.bind(this)
         this.setShowCoref=this.setShowCoref.bind(this)
         this.SetCorefC=this.SetCorefC.bind(this)
+        this.setRelation=this.setRelation.bind(this)
+        this.fixRelationVectors=this.fixRelationVectors.bind(this)
+    }
+    setRelation(arg1,arg2,type){
+        console.log("set_relations")
+        let argument_relation={arg1:arg1,arg2:arg2,type:type}
+       let editor_element=ReactDOM.findDOMNode(this.editorref.current)
+        let anchor_name="annotation"+arg1
+        let head_name="annotation"+arg2
+       let anchor=editor_element.getElementsByClassName(anchor_name)
+        anchor[0].id=anchor_name
+       let head=editor_element.getElementsByClassName(head_name)
+        head[0].id=head_name
+        let color=""
+       switch (type){
+           case "Attack":
+               color="red"
+               break;
+
+           case "Support":
+                color="blue"
+               break;
+           case "Against":
+               color="magenta"
+               break;
+           case "For/Pro":
+               color="green"
+               break;
+
+        }
+        console.log(anchor)
+
+       console.log(head) //
+        // let relation_connector={anchor:document.getElementById(anchor_name),head:head_name,label:type,line_color:color}
+     //  let relation_connector={anchor:anchor_name,head:head_name,label:type,line_color:color}
+              let relation_connector={anchor:anchor_name,head:head_name,label:type,line_color:color}
+              this.setState(prevState => ({
+                    relation_attributes: [...prevState.relation_attributes, argument_relation],
+                    relation_arrows:[...prevState.relation_arrows, relation_connector]
+
+
+              }),function(){
+                  console.log(this.state.relation_attributes)
+                  console.log(this.state.relation_arrows)
+
+
+              })
+
+
+
+/*let label_tag=<div style={{ fontSize: "large"}}>{type}</div>
+        ReactDOM.render(React.createElement(Xarrow, {start:document.getElementById(),end:head_name,label:label_tag,color:color,strokeWidth:2}, null),
+ document.getElementById("relations"));*/
+
+
+                                /*                  <Xarrow
+                                        start={arrow.anchor}
+                                      end={arrow.head}
+
+
+                                         label={<div style={{ fontSize: "large"}}>{arrow.label}</div>}
+                                        color={arrow.line_color}
+                                            strokeWidth={2}
+                                     />  */
+
+
+
     }
 
+   /* CreateRelationConnection(arg1,arg2,type){
+
+
+
+
+    }
+*/
 
     DisplayAddCustomValue(value) {
         console.log(value)
@@ -279,6 +360,12 @@ class DocumentViewer extends Component {
                         //this.annotator.current.
                         this.setState({annotator_view: true})
                     }
+                     if (this.state.schema_info["params"]["annotation"] == "argument" && this.state.annotation_contents.length>=2) {
+                        //this.annotator.current.
+                        this.setState({annotator_view: true})
+                    }
+
+
 
                 }
 
@@ -320,7 +407,8 @@ class DocumentViewer extends Component {
         if (this.state.options_status[1] == "enabled") {
             let editor = this.state.editor
             var style = "background-color:" + markedcolor
-            var markOptions = {css: style};
+            var annotation_name="annotation"+this.state.annotations.length
+            var markOptions = {css: style,className:annotation_name};
             // console.log(markedcolor)
             if (this.state.selected_annotation_id != -1) {
                 editor.markText(this.state.annotations[this.state.selected_annotation_id].start, this.state.annotations[this.state.selected_annotation_id].end, markOptions);
@@ -367,6 +455,11 @@ class DocumentViewer extends Component {
                     //  console.log(this.state.annotations)
                 })
             }
+            let editor_element=ReactDOM.findDOMNode(this.editorref.current)
+            let s=editor_element.getElementsByClassName(annotation_name)
+            s[0].id=annotation_name
+
+            console.log(s)
         }
     }
 
@@ -452,6 +545,13 @@ class DocumentViewer extends Component {
                 })
                 //delete this.state.document_attributes[index]
                 break
+            case "relation_attribute":
+
+                 j=index - this.state.annotations.length
+                 console.log(j)
+                 this.state.relation_attributes.splice(j, 1)
+                 this.state.relation_arrows.splice(j, 1)
+                break
 
 
         }
@@ -498,11 +598,73 @@ class DocumentViewer extends Component {
         this.setState({editor: editor})
     }
 
+
+ fixRelationVectors(){
+        console.log("fix vectors")
+       // console.log(data)
+        if(this.state.relation_attributes.length!=0){
+            let elem=[]
+             let editor_element=ReactDOM.findDOMNode(this.editorref.current)
+            let relations_element=document.getElementById("relations")
+            ReactDOM.unmountComponentAtNode(relations_element);
+            let start_point=null
+            let end_point=null
+            console.log(this.state.relation_arrows.length)
+            for(let i=0;i<this.state.relation_arrows.length;i++){
+                start_point=editor_element.getElementsByClassName(this.state.relation_arrows[i].anchor)
+                end_point=editor_element.getElementsByClassName(this.state.relation_arrows[i].head)
+                // console.log(start_point)
+            //    console.log(end_point)
+                if(start_point[0]==null || end_point[0]==null){
+                    continue
+                }
+                 console.log(start_point)
+                 console.log(end_point)
+                start_point[0].id=this.state.relation_arrows[i].anchor
+                end_point[0].id=this.state.relation_arrows[i].head
+                elem.push( <Xarrow
+                                        start={this.state.relation_arrows[i].anchor}
+                                      end={this.state.relation_arrows[i].head}
+
+
+                                         label={<div style={{ fontSize: "large"}}>{this.state.relation_arrows[i].label}</div>}
+                                        color={this.state.relation_arrows[i].line_color}
+                                            strokeWidth={2} _extendSVGcanvas={15}
+
+                                     />)
+            }
+            //var appHtml = React.renderToString(elem);
+
+            ReactDOM.render(elem,relations_element)
+
+
+
+            //ReactDOM.render(elem,document.getElementById("relations"))
+
+           // this.forceUpdate()
+
+           console.log(document.getElementById("relations"))
+
+
+           // this.forceUpdate()
+
+
+
+        }
+ }
+
+
     componentDidMount() {
         const data = this.getText();
         // console.log(data)
 
+
+
+
     }
+    componentWillUnmount() {
+
+}
 
     setShowCoref(status)
         {
@@ -589,7 +751,10 @@ class DocumentViewer extends Component {
                 this.forceUpdate()
             }
 
-
+        if(this.state.relation_attributes.length>0){
+            console.log("redraw")
+        //   this.fixRelationVectors()
+        }
         //  console.log(this.state.selected_content)
         //   let filename=this.props.location.state
 
@@ -690,7 +855,11 @@ class DocumentViewer extends Component {
 
         render()
         {
-
+            const boxStyle = {
+                        border: "grey solid 2px",
+                        borderRadius: "10px",
+                        padding: "5px",
+                        };
             //   console.log(this.state.text)
             /* const valuek = <div>
                  <h1>Name:{this.props.location.state.filename}</h1>
@@ -833,17 +1002,18 @@ class DocumentViewer extends Component {
                         {/*       <FaTimes size={22} onClick={this.props.ReturnMain} style={{cursor: "pointer",position:"absolute",top:0,right:0}} />*/}
                     </div>
 
-                    <div className="main-document" style={{width: this.state.showCoref ? "60%" : "100%", float:"left"}}>
+                    <div  className="main-document" style={{width: this.state.showCoref ? "60%" : "100%", float:"left"}}>
 
 
 
-                        <CodeMirror
+                        <CodeMirror ref={this.editorref}
                             value={this.state.text}
                             options={{
 
                                 lineWrapping: true,
                                 lineNumbers: true,
-                                readOnly: true
+                                readOnly: true,
+                                autoRefresh: true
 
                             }}
                             onChange={(editor, data, value) => {
@@ -854,12 +1024,43 @@ class DocumentViewer extends Component {
                                 // console.log(data)
 
                             }}
+                            onScroll={(editor, data) => {
+                                this.fixRelationVectors()
+
+
+                            }}
                             editorDidMount={(editor) => this.setEditor(editor)}
                             onCursor={(editor, data)=> this.ShowAnnotationType(editor,data)}
 
 
 
                         />
+                        {/*  style={{overflow: "auto",position: "relative",
+                        display: "flex"}}*/}
+
+                        {(this.state.relation_attributes.length>0) ? <div id="relations">
+                                 {this.state.relation_arrows.map((arrow) => (
+
+
+                                                  <Xarrow
+                                        start={arrow.anchor}
+                                      end={arrow.head}
+
+
+                                         label={<div style={{ fontSize: "large"}}>{arrow.label}</div>}
+                                        color={arrow.line_color}
+                                            strokeWidth={2}
+                                            _extendSVGcanvas={15}
+
+                                     />
+                                        ))}
+
+
+
+
+
+
+                      </div>:null}
 
 
 
@@ -874,7 +1075,8 @@ class DocumentViewer extends Component {
                         selected_annotation_property={(this.state.selected_annotation_id!=-1)? this.state.annotation_properties[this.state.selected_annotation_id]:""}
                         displayCoref={this.state.showCoref} corefCount={this.state.corefC}
                         document_attributes={this.state.document_attributes}
-
+                        annotation_contents={this.state.annotation_contents}
+                         setRelation={this.setRelation}
 
                     />
                     <AnnotationsView HideAnnotations={this.HideAnnotations}
@@ -884,6 +1086,7 @@ class DocumentViewer extends Component {
                                      annotation_properties={this.state.annotation_properties}
                                      annotation_contents={this.state.annotation_contents}
                                      document_attributes={this.state.document_attributes}
+                                     relation_attributes={this.state.relation_attributes}
                                      selected_annotation_label={(this.state.selected_annotation_id!=-1)?this.state.tooltip_label:""}
                                      selected_annotation_title={(this.state.selected_annotation_id!=-1)?this.state.tooltip_title:""}
                                      selected_annotation_property={(this.state.selected_annotation_id!=-1)?this.state.annotation_properties[this.state.selected_annotation_id]:""}
@@ -914,6 +1117,8 @@ class DocumentViewer extends Component {
       </Dialog>
 
                     </div>
+
+
 
 
 

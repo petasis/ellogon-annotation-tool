@@ -37,6 +37,8 @@ import CorefButtonTable from "./CorefButtonTable";
 import CorefCheckbox from "./CorefCheckbox";
 import DocumentAttributeTextArea from "./DocumentAttributeTextArea";
 import CorefMultiEntry from "./CorefMultiEntry";
+import SelectRelationType from "./SelectRelationType";
+
 //import {schemerequestInstance,getLanguages, getTypes, getAttributes, getAttributeAlternatives, getValues, getCoreferenceAttributes
 //} from "../AnnotationSchemeAPI"
 const useStyles = makeStyles((theme) => ({
@@ -103,6 +105,7 @@ function TabPanelC(props) {
 export default function Annotator(props) {
     const classes = useStyles();
     const [annotatedisabled,SetAnnotateDisabled]=useState(true);
+
     const [markedcolor,SetMarkedColor]=React.useState("");
      const [markedfield,SetMarkedField]=React.useState("");
       const [markedfieldtitle,SetMarkedFieldTitle]=React.useState("");
@@ -121,18 +124,29 @@ export default function Annotator(props) {
     const [rtable_content,setrTableContent]=React.useState([]);
      const [dtable_content,setdTableContent]=React.useState([]);
      const [document_attributes,setDocumentAttributes]=React.useState({});
+     const [relation_type,setRelationType]=React.useState("")
+     const prevrelationtypeRef = useRef();
+     const prev_arg1=useRef();
+     const prev_arg2=useRef();
+     const [relation_arg1,setRelationArg1]=React.useState(-1)
+      const [relation_arg2,setRelationArg2]=React.useState(-1)
       const [corefCounter, setCorefCounter] = useState(0);
+      let relval=0
+    const [, updateState] = React.useState();
+    const forceUpdate = React.useCallback(() => updateState({}), []);
     //const [relation_disabled,setRelationdisabled]=useState(true);
   /*  const handleTabChange = (event, newValue) => {
         setTabValue(newValue)
     }*/
     const handleTabChange = (event, newValue) => {
         setTabValue(newValue)
+        SetAnnotateDisabled(true)
     }
    // let languages=[]
   //  let annotation_attribute_state=true
 
  const Reset=()=>{
+
         SetAnnotateDisabled(true)
         SetMarkedColor("")
         SetMarkedField("")
@@ -144,6 +158,13 @@ export default function Annotator(props) {
         SetSecondaryStatus(true)
         SetReporterLocationStatus(true)
         setViewshow(false)
+        setTableContent([])
+        setRelationType("")
+        setRelationArg1(-1)
+         setRelationArg2(-1)
+        setdTableContent([])
+        setrTableContent([])
+       relval=0
 
  }
 
@@ -169,7 +190,36 @@ const updateDocumentAttributes=(key,value)=>{
     }
 
 
+const setRelationArg=(id,value)=>{
 
+        if(id=="Arg 1"){
+
+            setRelationArg1(value)
+
+            relval=relval+1
+
+        }
+        if(id=="Arg 2"){
+
+            setRelationArg2(value)
+             relval=relval+1
+
+
+        }
+        if (value==-1){
+            relval=0
+        }
+
+        console.log(relval)
+
+        if (relation_type!="" && relval==2 ){
+            console.log("here")
+            SetAnnotateDisabled(false)
+            relval=0
+        }
+
+
+}
 
 const ClickButton=(value,label,title)=>{
 
@@ -308,6 +358,17 @@ setTableContent(ui)
 }
 
 
+const selectrelationtype=(type)=>{
+
+    setRelationType(type)
+    setRelationArg1(-1)
+    setRelationArg2(-1)
+  //  SetAnnotateDisabled(true)
+ //   return () => SetAnnotateDisabled(value => !value);
+  //  CreateAnnottatorUI(props.uistructure)
+
+}
+
 
 const CreateAnnottatorUI=(uistructure)=> {
 
@@ -319,7 +380,7 @@ const CreateAnnottatorUI=(uistructure)=> {
    let relations=[]
     let uir=[]
     let uid=[]
-
+    let relation_types=[]
 
     let disabled_states=[wherestatus,reporterlocationstatus,mainstatus,secondarystatus]
     let property_labels=["where","reporter_location","main","secondary"]
@@ -335,6 +396,13 @@ const CreateAnnottatorUI=(uistructure)=> {
     console.log(disabled_states)
   //  console.log(extra_properties)
     console.log(dateproperty)
+    let args={"Arg 1":relation_arg1,"Arg 2":relation_arg2}
+
+
+
+
+
+
 
     for (const [index, value] of uistructure["ui_structure"].entries()) {
          if (value.title.includes("relations") || value.title.includes("stance")){
@@ -382,7 +450,9 @@ const CreateAnnottatorUI=(uistructure)=> {
 
             } else {
                 //console.log(uir.length)
+                let element_type=""
                 if (uir.length > 0) {
+
                     //  console.log(value["rows"])
                     // uir.push(<Header colspan={value.colspan} id={value.id} title={value.title}/>)
                     for (const [index2, value2] of value["rows"].entries()) {
@@ -391,12 +461,25 @@ const CreateAnnottatorUI=(uistructure)=> {
                             switch (index3) {
                                 case 0:
                                     relations.push(<tr><AnnotationRelation title={value3.title}/></tr>)
+                                    relation_types.push(value3.title)
+                                    element_type=value3.title
+                                    console.log(element_type)
                                     break;
                                 case 1:
                                 case 2:
+
+
+
+
                                     relations.push(<tr><Header colspan={1} id={value3["argument_header"].id}
                                                                title={value3["argument_header"].title}/>
-                                        <AnnotationRelationCombobox/>
+                                        <AnnotationRelationCombobox annotation_contents={props.annotation_contents} current_type={relation_type} element_type={element_type}
+                                                arg={value3["argument_header"].title} args={args}
+                                                setRelationArg={setRelationArg}
+
+
+
+                                        />
                                     </tr>)
                                     break;
 
@@ -405,9 +488,30 @@ const CreateAnnottatorUI=(uistructure)=> {
 
 
                         }
+
+
                         uir.push(<AnnotationRelationTable uielement={relations}/>)
                         relations = []
                     }
+
+
+                        /*uir.unshift(<tr>
+                            <td><select
+                                className="selectpicker"
+                                data-container="body"
+                                selectpicker=""
+                                select-relation-type="relation_type">
+                                <option value="">--- Select relation type ---</option>
+                              {relation_types.map((value, index) => {
+                          return <option value={value}>{value}</option>
+                                  })}
+                            </select>
+                            </td>
+                            </tr>)*/
+                        console.log(uir.length)
+
+
+
 
                 } else {
 
@@ -449,8 +553,42 @@ const CreateAnnottatorUI=(uistructure)=> {
 
     }
 setTableContent(ui)
+if (uir.length>0)    {
+    uir.unshift(<tr><td>{annotatedisabled}</td></tr>)
+    uir.unshift(<SelectRelationType selectrelationtype={selectrelationtype} relation_types={relation_types}/>)
+    uir.push(<tr>
+        <td>
+            <textarea style={{marginTop:"4%",resize:"vertical"}}  readOnly={true}
+                                                                                                         value={(relation_arg1!=-1)?props.annotation_contents[relation_arg1]:"No selected"}></textarea>
+        </td>
+         <td>
+            <textarea style={{marginTop:"4%",resize:"vertical"}}  readOnly={true}
+                                                                                                         value={(relation_arg2!=-1)?props.annotation_contents[relation_arg2]:"No selected"}></textarea>
+        </td>
+
+
+    </tr>)
+
+
+
+
+
+}
+
 setrTableContent(uir)
 setdTableContent(uid)
+if(tabValue==1){
+   if (relation_arg1==-1 || relation_arg2==-1) {
+  SetAnnotateDisabled(true)
+    console.log("disabled")}
+   else{
+       SetAnnotateDisabled(false)
+   }
+}
+
+
+
+
 }
 
 const Annotate=()=>{
@@ -468,7 +606,12 @@ const Annotate=()=>{
 
         props.AnnotateSelectedText(markedcolor,markedfieldtitle,markedfield,prop_val)}
         else{
-                props.setDocumentAttributes(document_attributes)
+            if(tabValue==2){
+                props.setDocumentAttributes(document_attributes)}
+            else{
+                console.log("relations")
+                    props.setRelation(relation_arg1,relation_arg2,relation_type)
+            }
                 //console.log(document_attributes)
 
         }
@@ -491,7 +634,15 @@ useEffect(() => {
             if(props.uistructure.kind=="button"){
 
                 if(props.annotator_disabled==true){
-                    setTabValue(2)
+
+                    if(props.uistructure["params"]["annotation"] == "argument"){
+                         setTabValue(1)
+                    }
+                    if(props.uistructure["params"]["annotation"] == "VAST_value"){
+                         setTabValue(2)
+                    }
+
+                  //  setTabValue(2)
 
                 }
                 else{
@@ -540,10 +691,21 @@ useEffect(() => {
              }
         }
 
+        if( (prevrelationtypeRef.current!=relation_type && relation_type!="") || (prev_arg1.current!=relation_arg1) ||(prev_arg2.current!=relation_arg2)){
+             if(props.uistructure.kind=="button") {
+                   console.log("rerender")
+
+                 //   SetAnnotateDisabled(true)
+                    CreateAnnottatorUI(props.uistructure)
+             }
+        }
+
         // console.log(prevmarkedcolorRef.current)
 
          prevmarkedfieldRef.current=markedfield
-
+         prevrelationtypeRef.current=relation_type
+         prev_arg1.current=relation_arg1
+         prev_arg2.current=relation_arg2
       })
 
 /*useEffect(() => {
@@ -584,7 +746,7 @@ useEffect(() => {
                                     <AppBar position="static">
                 <Tabs value={tabValue} onChange={handleTabChange}>
                     <Tab label="Annotator"  disabled={props.annotator_disabled}  />{/*disabled>*/}
-                    <Tab label="Relations" disabled={rtable_content.length>0?false:true} />
+                    <Tab label="Relations" disabled={(rtable_content.length>0 && props.annotation_contents.length>=2)?false:true} />
                     <Tab label="Document Attributes" disabled={dtable_content.length>0?false:true} />
                 </Tabs>
             </AppBar>

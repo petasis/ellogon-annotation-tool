@@ -356,7 +356,7 @@ try {
 
 
 
-     return(<div onClick={this.setAnchorPoint}>
+     return(<div style={{overflow:"auto"}}    onClick={this.setAnchorPoint}>
          <TreeList
   data={data}
   columns={columns}

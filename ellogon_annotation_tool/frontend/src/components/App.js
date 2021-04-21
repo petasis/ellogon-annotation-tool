@@ -116,8 +116,7 @@ class App extends Component {
             //<Router>
                 <div className="App" style={{display: "flex",backgroundColor:bcolor}}>
                 
-                    <div id="sidebar" className="sidebar_height" style={{display:(login_status) ? "block":"none"}}>
-                        <SideBar login_status={login_status}  handleLogout={this.handleLogout} />
+                    <div id="sidebar" className="sidebar_height" style={{display:(login_status) ? "block":"none"}}> <SideBar login_status={login_status}  handleLogout={this.handleLogout} />
                     </div>
                     <nav className="navbar navbar-expand-lg navbar-light fixed-top" style={{display:(!login_status) ? "block":"none"}}>
                  
@@ -138,7 +137,7 @@ class App extends Component {
                     </nav>
 
                     <div className="auth-wrapper">
-                        <div className={doc_status?"codemirror_xl":"auth-inner"}>
+                        <div className={doc_status?"codemirror_xl":"auth-inner"} style={{display:(login_state=="/main"|| login_state=="/main/")?"flex":""}}>
 
                             <Switch>
                                // <Route exact path='/'                      component={Login}/>

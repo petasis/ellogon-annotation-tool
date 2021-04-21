@@ -31,10 +31,19 @@ function Row(props) {
   const classes = useRowStyles();
   const DeleteRecord=(index)=> {
         let type="annotation"
-        if(index>=props.count){
-            type="document_attribute"
+        console.log(props.count)
+        console.log(props.countd)
+        console.log(props.countr)
+        let l1=props.count
+        if(index>=l1){
+            if(props.countd!=0 && props.countr==0){
+                 type="document_attribute"
+            }
+            if(props.countd==0 && props.countr!=0){
+                 type="relation_attribute"
+            }
         }
-        //console.log(type)
+        console.log(type)
        props.Delete(index,type)
 
   }
@@ -57,7 +66,7 @@ function Row(props) {
         <TableCell align="right">{row.to}</TableCell>
         <TableCell align="right">{row.type}</TableCell>
           <TableCell align="right">
-              <Button color="secondary">
+              <Button color="secondary" size={"large"}>
                 <FaMinusCircle
                         onClick={() => DeleteRecord(row.id)}
 
@@ -92,10 +101,10 @@ function Row(props) {
                         {historyRow.name}
                       </TableCell>
                       <TableCell>
-                          <span style={{display:(historyRow.name=="Document Segment")?"inline-block":"none"}}> <textarea style={{marginTop:"4%",resize:"both"}}  readOnly={true}
+                          <span style={{display:((historyRow.name=="Document Segment"||historyRow.name=="Arg1"||historyRow.name=="Arg2"))?"inline-block":"none"}}> <textarea style={{marginTop:"4%",resize:"both"}}  readOnly={true}
                                                                                                          value={historyRow.value}></textarea>
                           </span>
-                          <span style={{display:(!(historyRow.name=="Document Segment"))?"inline-block":"none"}}> {historyRow.value}
+                          <span style={{display:(!(historyRow.name=="Document Segment"||historyRow.name=="Arg1"||historyRow.name=="Arg2"))?"inline-block":"none"}}> {historyRow.value}
                           </span>
 
                           </TableCell>
@@ -210,19 +219,23 @@ Delete(index,type){
                 record={}
 
             }
+         let k=0
+         if(this.props.document_attributes.length==null){
+             k=this.props.annotations.length
+         }
+        else{
+            k=this.props.annotations.length+this.props.document_attributes.length
+         }
+         for (const [key, value] of Object.entries(this.props.relation_attributes)) {
+             record={id:k,from:"",to:"",type:"argument_relation",detail:[{name:"ID",value:k},{name:"Type",value:"argument_relation"},
+                    {name:"Annotator ID",value:this.defineAnnnotatorId()}, {name:"Type Attribute",value:value.type},
+                    {name:"Arg1",value:this.props.annotation_contents[value.arg1]},{name:"Arg2",value:this.props.annotation_contents[value.arg2]}]}
+             data.push(record)
+             k=k+1
+             record={}
+         }
 
-
-
-
-
-
-
-       // console.log(data)
         return data
-
-
-
-
 
     }
 
@@ -387,7 +400,7 @@ displayannotationcontent(row) {
         </TableHead>
         <TableBody>
           {data.map((row) => (
-            <Row count={this.props.annotations.length}
+            <Row count={this.props.annotations.length} countd={Object.keys(this.props.document_attributes).length} countr={this.props.relation_attributes.length}
 
                  Delete={this.Delete} row={row} />
           ))}

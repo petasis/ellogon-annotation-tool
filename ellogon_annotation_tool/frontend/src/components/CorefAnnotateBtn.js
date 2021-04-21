@@ -12,29 +12,14 @@ class CorefAnnotateBtn extends Component {
     render(){
         return(
             <td>
-            <div>
-                <button type="button" className="btn btn-primary  coref-annotate-btn" >
-                    <FontAwesomeIcon  className="fas fa-plus" icon={"plus"}>
-                    </FontAwesomeIcon>
-
-
-
-
-
-                </button>
-                {/*     <button type="button" className="btn btn-primary btn-block coref-annotate-btn" ><i
-                    className="far fa-edit"></i>
-                </button>*/}
-
-
-
-            </div>
-
-
-
+                <div>
+                    <button type="button" className="btn btn-primary  coref-annotate-btn" >
+                        <FontAwesomeIcon  className="fas fa-plus" icon={"plus"}/>
+                    </button>
+                </div>
             </td>
         )
-        }
+    }
 
 }
 

@@ -34,13 +34,15 @@ def parse_button_response(response_text):
                     record = {"id": h.get("id"), "title": h.get("title"), "colspan": h.parent.get("colspan")}
                     data_headers.append(record)
                     daid=len(data_headers)-1
+                    id_number = re.match('.*?([0-9]+)$', h.get("id")).group(1)
+                    id_numbers.append(int(id_number))
 
     try:
         col_total = int(mydivs[0].parent.get("colspan"))
     except:
         col_total = 0
     # print(data_headers)
-    # print(id_numbers)
+    print(id_numbers)
     elem_counts = [x - id_numbers[i - 1] - 1 for i, x in enumerate(id_numbers)][1:]
     # print(elem_counts)
     # print(sum(elem_counts))
@@ -69,7 +71,12 @@ def parse_button_response(response_text):
     components = []
     for i in range(buttons_count):
         idx = re.match('.*?([0-9]+)$', mybuttons[i].get("id")).group(1)
-        brecord = {"id": int(idx), "title": mybuttons[i].get("button-tooltip"), "label": mybuttons[i].get("label"),
+        labelk=(mybuttons[i].get("label"))
+        x = labelk.replace('\\n','')
+        labelk=""
+        for item in x:
+            labelk=labelk+" "+item
+        brecord = {"id": int(idx), "title": mybuttons[i].get("button-tooltip"), "label": labelk,
                    "color": mybuttons[i].get("bg-color"), "type": "annotation-button",
                    "colspan": mybuttons[i].parent.get("colspan")}
         components.append(brecord)
@@ -99,7 +106,7 @@ def parse_button_response(response_text):
     colcount = 0
     group_index = 0
     rows = []
-
+    #print(elem_counts)
     for item in sorted_components:
 
         row.append(item)

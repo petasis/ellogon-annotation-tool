@@ -88,6 +88,9 @@ componentDidUpdate(prevProps, prevState, snapshot) {
     }
 */
     SelectMyAnnotationScheme(response){
+
+
+
         this.props.SelectAnnotationScheme(response)
     }
 

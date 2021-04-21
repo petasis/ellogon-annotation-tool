@@ -73,13 +73,13 @@ const rowValue = ({ index, style }) => (
 export default function AnnotationSchemeSelection(props) {
 
     const classes = useStyles();
-    const [mode,setMode]=React.useState('button');
-    const [languages,setLanguages]=React.useState([]);
-    const [annotationtypes,setTypes]=React.useState([])
-    const [annotationattributes,setAttributes]=React.useState([])
-    const [attribute_alternatives,setAttributeAlternatives]=React.useState([])
-    const [values,setValues]=React.useState([])
-    const [coreferenceattributes,setCoreferenceAttributes]=React.useState([])
+    const [mode, setMode] = React.useState('button');
+    const [languages, setLanguages] = React.useState([]);
+    const [annotationtypes, setTypes] = React.useState([])
+    const [annotationattributes, setAttributes] = React.useState([])
+    const [attribute_alternatives, setAttributeAlternatives] = React.useState([])
+    const [values, setValues] = React.useState([])
+    const [coreferenceattributes, setCoreferenceAttributes] = React.useState([])
     const [tabValue, setTabValue] = React.useState(0);
     const [b_language, setLanguageB] = React.useState('');
     const [b_annotationType, setAnnotationTypeB] = React.useState('');
@@ -91,158 +91,169 @@ export default function AnnotationSchemeSelection(props) {
     const [c_language, setLanguageC] = React.useState('');
     const [c_annotationType, setAnnotationTypeC] = React.useState('');
     const [c_attributeAlternative, setAttributeAlternativeC] = React.useState('');
-    const [req,setReq] = React.useState(true);
-    const [e1,setE1] = React.useState(false);
-    const [e2,setE2] = React.useState(false);
-    const [e3,setE3] = React.useState(false);
-    const [e4,setE4] = React.useState(false);
-    const [e5,setE5] = React.useState(false);
-    const [e6,setE6] = React.useState(false);
-    const [e7,setE7] = React.useState(false);
+    const [req, setReq] = React.useState(true);
+    const [e1, setE1] = React.useState(false);
+    const [e2, setE2] = React.useState(false);
+    const [e3, setE3] = React.useState(false);
+    const [e4, setE4] = React.useState(false);
+    const [e5, setE5] = React.useState(false);
+    const [e6, setE6] = React.useState(false);
+    const [e7, setE7] = React.useState(false);
 
 
-
-    const getCurrentState=(type)=>{
+    const getCurrentState = (type) => {
         getlanguages(type)
-        if (type=="button" && b_language!=''){
-            setLanguageB(b_language)
+
+        console.log("executed12")
+        if (type == "button" && (b_language != ''|| localStorage.getItem("LanguageB")!=null)) {
+            console.log("executed2")
+             setLanguageB(b_language)
             setAnnotationTypeB(b_annotationType)
             setAnnotationAttributeB(b_annotationAttribute)
             setAttributeAlternativeB(b_attributeAlternative)
-            gettypes("button",b_language)
+            gettypes("button", b_language)
             getannotationattributes(b_annotationType)
-            getannotationalternatives(type,b_annotationAttribute)
+            getannotationalternatives(type, b_annotationAttribute)
             getvalues(b_attributeAlternative)
-        }
-        else{
-            if(c_language!=''){
-                gettypes("coreference",c_language)
-                getannotationalternatives(type,c_annotationType)
-                getcoreferenceattirbutes(c_attributeAlternative)}
+
+
+
+
+        } else {
+            if (c_language != '' || localStorage.getItem("LanguageC") != null) {
+                 if (localStorage.getItem("LanguageC") != null) {
+        setLanguageC(localStorage.getItem("LanguageC"))
+    }
+    if (localStorage.getItem("AnnotationTypeC") != null) {
+        setAnnotationTypeC(localStorage.getItem("AnnotationTypeC"))
+    }
+    if (localStorage.getItem("AttributeAlternativeC") != null) {
+        setAttributeAlternativeC(localStorage.getItem("AttributeAlternativeC"))
+
+    }
+                gettypes("coreference", c_language)
+                getannotationalternatives(type, c_annotationType)
+                getcoreferenceattirbutes(c_attributeAlternative)
+            }
         }
     }
 
 
-    const getlanguages=(type)=>{
+    const getlanguages = (type) => {
         setMode(type)
-        let   r=getLanguages(schemerequestInstance,type).then(x => {
+        let r = getLanguages(schemerequestInstance, type).then(x => {
             //console.log(x);
             setLanguages(x["languages"])
         })
-      //console.log(languages)
+        //console.log(languages)
     }
-
 
 
 // first time
-const gettypes=(type,lang)=>{
+    const gettypes = (type, lang) => {
 
-       // let lang=getlang(type)
-         console.log(b_language)
-         let   r=getTypes(schemerequestInstance,type,lang).then(x => {
-                     console.log(x);
+        // let lang=getlang(type)
+        console.log(b_language)
+        let r = getTypes(schemerequestInstance, type, lang).then(x => {
+            console.log(x);
 
-                     if (x["annotation_types"].length==0){
-                         // setAnnotationTypeRequiredB(false)
-                         setReq(false)
-                     }
-                     else{
-                         setReq(true)
-                     }
-                    setTypes(x["annotation_types"])
-            })
-    }
-
-    const getannotationattributes=(annotation_type)=>{
-
-       // let lang=getlang(type)
-       //  console.log(b_language)
-         let   r=getAttributes(schemerequestInstance,"button",b_language,annotation_type).then(x => {
-                   if (x["attributes"].length==0){
-                         // setAnnotationAttributeRequiredB(false)
-                       setReq(false)
-                     }
-                   else{
-                       setReq(true)
-                   }
-                   setAttributes(x["attributes"])
-            })
-
-
-    }
-
-    const getannotationalternatives=(type,p)=>{
-            let language=null
-            let annotation_type=null
-            let attribute=null
-            if (type=="button"){
-                language=b_language
-                annotation_type=b_annotationType
-                attribute=p
+            if (x["annotation_types"].length == 0) {
+                // setAnnotationTypeRequiredB(false)
+                setReq(false)
+            } else {
+                setReq(true)
             }
-            else{
-                language=c_language
-                annotation_type=p
+            setTypes(x["annotation_types"])
+        })
+    }
+
+    const getannotationattributes = (annotation_type) => {
+
+        // let lang=getlang(type)
+        //  console.log(b_language)
+        let r = getAttributes(schemerequestInstance, "button", b_language, annotation_type).then(x => {
+            if (x["attributes"].length == 0) {
+                // setAnnotationAttributeRequiredB(false)
+                setReq(false)
+            } else {
+                setReq(true)
             }
-             let   r=getAttributeAlternatives(schemerequestInstance,type,language,annotation_type,attribute).then(x => {
-                     console.log(x);
-                      // if (type=="button"){
-
-                         if (x["alternatives"].length==0){
-                             console.log("ola")
-                         // setAttributeAlternativeRequiredB(false)
-                             setReq(false)
-                         }
-                         else {
-                             setReq(true)
-                         }
-                      // }
+            setAttributes(x["attributes"])
+        })
 
 
-                    setAttributeAlternatives(x["alternatives"])
-            })
     }
 
- const getvalues=(p)=>{
+    const getannotationalternatives = (type, p) => {
+        let language = null
+        let annotation_type = null
+        let attribute = null
+        if (type == "button") {
+            language = b_language
+            annotation_type = b_annotationType
+            attribute = p
+        } else {
+            language = c_language
+            annotation_type = p
+        }
+        let r = getAttributeAlternatives(schemerequestInstance, type, language, annotation_type, attribute).then(x => {
 
-             let   r=getValues(schemerequestInstance,"button",b_language,b_annotationType,b_annotationAttribute,p).then(x => {
-                     console.log(x);//?
-                     let val_items=[]
-                    let record={}
-                     for(let i=0;i<x["groups"].length;i++){
-                         record={val:x["groups"][i].group,title:true}
-                         val_items.push(record)
-                         for(let j=0;j<x["groups"][i].values.length;j++){
-                             record={val:x["groups"][i].values[j],title:false}
-                            val_items.push(record)
-                         }
 
-                     }
-                     console.log(val_items)
-                     setValues(val_items)
-            })
+            if (x["alternatives"].length == 0) {
+                console.log("ola")
+                // setAttributeAlternativeRequiredB(false)
+                setReq(false)
+            } else {
+                setReq(true)
+            }
+            // }
+
+
+            setAttributeAlternatives(x["alternatives"])
+        })
     }
 
-const getcoreferenceattirbutes=(p)=>{
+    const getvalues = (p) => {
 
-             let   r=getCoreferenceAttributes(schemerequestInstance,"coreference",c_language,c_annotationType,p).then(x => {
-                     console.log(x);//?
-                    let attributes=[]
-                    for (let j = 0; j < x["attributes"].length; j++){
-                            console.log(x["attributes"][j].attribute)
-                            attributes.push(x["attributes"][j].attribute)
-}
+        let r = getValues(schemerequestInstance, "button", b_language, b_annotationType, b_annotationAttribute, p).then(x => {
 
-                     if (x["attributes"].length==0){
-                         // setAnnotationTypeRequiredB(false)
-                         setReq(false)
-                     }
-                     else{
-                         setReq(true)
-                     }
+            let val_items = []
+            let record = {}
+            for (let i = 0; i < x["groups"].length; i++) {
+                record = {val: x["groups"][i].group, title: true}
+                val_items.push(record)
+                for (let j = 0; j < x["groups"][i].values.length; j++) {
+                    record = {val: x["groups"][i].values[j], title: false}
+                    val_items.push(record)
+                }
 
-                   setCoreferenceAttributes(attributes)
-            })
+            }
+            console.log(val_items)
+            setValues(val_items)
+
+        })
+    }
+
+    const getcoreferenceattirbutes = (p) => {
+
+        let r = getCoreferenceAttributes(schemerequestInstance, "coreference", c_language, c_annotationType, p).then(x => {
+            console.log(x);//?
+            let attributes = []
+            for (let j = 0; j < x["attributes"].length; j++) {
+                console.log(x["attributes"][j].attribute)
+                attributes.push(x["attributes"][j].attribute)
+            }
+
+            if (x["attributes"].length == 0) {
+                // setAnnotationTypeRequiredB(false)
+                setReq(false)
+            } else {
+                setReq(true)
+            }
+
+            setCoreferenceAttributes(attributes)
+
+        })
     }
 
 
@@ -253,27 +264,30 @@ const getcoreferenceattirbutes=(p)=>{
     const handleLanguageB = (event) => {
         setE1(true)
         setLanguageB(event.target.value)
+        localStorage.setItem('LanguageB', event.target.value);
         setAnnotationTypeB("")
         setAnnotationAttributeB("")
         setAttributeAlternativeB("")
         setValues([])
         //console.log()
-        gettypes("button",event.target.value)
+        gettypes("button", event.target.value)
         //console.log(languages)
     }
 
     const handleLanguageC = (event) => {
         setE5(true)
         setLanguageC(event.target.value)
+        localStorage.setItem('LanguageC', event.target.value);
         setAnnotationTypeC("")
         setAttributeAlternativeC("")
         setCoreferenceAttributes([])
-        gettypes("coreference",event.target.value)
+        gettypes("coreference", event.target.value)
     }
 
     const handleAnnotationTypeB = (event) => {
         setE2(true)
         setAnnotationTypeB(event.target.value)
+        localStorage.setItem('AnnotationTypeB', event.target.value);
         setAnnotationAttributeB("")
         setAttributeAlternativeB("")
         setValues([])
@@ -283,7 +297,8 @@ const getcoreferenceattirbutes=(p)=>{
     const handleAnnotationTypeC = (event) => {
         setE6(true)
         setAnnotationTypeC(event.target.value)
-         setAttributeAlternativeC("")
+        localStorage.setItem('AnnotationTypeC', event.target.value);
+        setAttributeAlternativeC("")
         setCoreferenceAttributes([])
         getannotationalternatives("coreference", event.target.value)
     }
@@ -291,6 +306,7 @@ const getcoreferenceattirbutes=(p)=>{
     const handleAnnotationAttributeB = (event) => {
         setE3(true)
         setAnnotationAttributeB(event.target.value)
+        localStorage.setItem('AnnotationAttributeB', event.target.value);
         setAttributeAlternativeB("")
         setValues([])
         getannotationalternatives("button", event.target.value)
@@ -299,12 +315,14 @@ const getcoreferenceattirbutes=(p)=>{
     const handleAttributeAlternativeB = (event) => {
         setE4(true)
         setAttributeAlternativeB(event.target.value)
+        localStorage.setItem('AttributeAlternativeB', event.target.value);
         getvalues(event.target.value)
     }
 
     const handleAttributeAlternativeC = (event) => {
         setE7(true)
         setAttributeAlternativeC(event.target.value)
+        localStorage.setItem('AttributeAlternativeC', event.target.value);
         getcoreferenceattirbutes(event.target.value)
     }
 
@@ -312,36 +330,171 @@ const getcoreferenceattirbutes=(p)=>{
         setReq(event.target.value)
     }
 
-  const AttrValue = ({ index, style }) => (
-  <div style={style}>{coreferenceattributes[index]}</div>
-);
+    const AttrValue = ({index, style}) => (
+        <div style={style}>{coreferenceattributes[index]}</div>
+    );
 
-const ValValue = ({ index, style }) => (
-  <div style={style} className={ values[index].title ? classes.titleStyle : null }>{values[index].val}</div>
-);
+    const ValValue = ({index, style}) => (
+        <div style={style} className={values[index].title ? classes.titleStyle : null}>{values[index].val}</div>
+    );
 
 
-const Submit=(event) =>{
-    event.preventDefault();
-    let r
-    if (mode=="button"){
-         r=getSchema(schemerequestInstance,mode,b_language,b_annotationType,b_annotationAttribute,b_attributeAlternative).then(x => {
+    const Submit = (event) => {
+        event.preventDefault();
+        let r
+        if (mode == "button") {
+            r = getSchema(schemerequestInstance, mode, b_language, b_annotationType, b_annotationAttribute, b_attributeAlternative).then(x => {
                 props.SelectMyAnnotationScheme(x)
-        })
-    }
-    else{
-        r=getSchema(schemerequestInstance,mode,c_language,c_annotationType,"",c_attributeAlternative).then(x => {
+            })
+        } else {
+            r = getSchema(schemerequestInstance, mode, c_language, c_annotationType, "", c_attributeAlternative).then(x => {
                 props.SelectMyAnnotationScheme(x)
-        })
+            })
+        }
+        console.log(mode)
+        props.handleClose()
     }
-    console.log(mode)
-    props.handleClose()
-}
+
+
+const RetrieveLastOptions=(mode)=>{
+        if(mode=="button"){
+            let language=localStorage.getItem("LanguageB")
+            if( language!=null){
+                setE1(true)
+                setLanguageB(language)
+                gettypes("button", language)
+                let type=localStorage.getItem("AnnotationTypeB")
+                console.log(type)
+                if(type!=null){
+                    setE2(true)
+                    setAnnotationTypeB(type)
+                    let r = getAttributes(schemerequestInstance, "button", language, type).then(x => {
+                                                     if (x["attributes"].length == 0) {
+                // setAnnotationAttributeRequiredB(false)
+                                                          setReq(false)
+                                                                      } else {
+                                                              setReq(true)
+                                                                   }
+                                                           setAttributes(x["attributes"])
+                                                           })
+                     let annotation_attribute=localStorage.getItem("AnnotationAttributeB")
+                       if(annotation_attribute!=null){
+                           setE3(true)
+                           setAnnotationAttributeB(annotation_attribute)
+                            let r = getAttributeAlternatives(schemerequestInstance, "button", language, type, annotation_attribute).then(x => {
+
+
+                                                 if (x["alternatives"].length == 0) {
+
+
+                                                                    setReq(false)
+                                                                  } else {
+                                                                  setReq(true)
+                                                          }
+                                                 setAttributeAlternatives(x["alternatives"])
+                                                              })
+
+                            let attribute_alternative=localStorage.getItem("AttributeAlternativeB")
+                            console.log(attribute_alternative)
+                            if(attribute_alternative!=null){
+
+                                setE4(true)
+                              setAttributeAlternativeB(attribute_alternative)
+                                 let r = getValues(schemerequestInstance, "button", language, type, annotation_attribute,attribute_alternative).then(x => {
+
+                                     let val_items = []
+                                     let record = {}
+                                     for (let i = 0; i < x["groups"].length; i++) {
+                                                record = {val: x["groups"][i].group, title: true}
+                                                 val_items.push(record)
+                                                for (let j = 0; j < x["groups"][i].values.length; j++) {
+                                                        record = {val: x["groups"][i].values[j], title: false}
+                                                                    val_items.push(record)
+                                                                 }
+
+                                                     }
+                                                 console.log(val_items)
+                                                 setValues(val_items)
+
+                                                 })
+
+
+                            }
+
+                                                  }
+                }
+            }
+        }
+        else{
+            let language=localStorage.getItem("LanguageC")
+             if( language!=null){
+                 setE5(true)
+                 setLanguageC(language)
+                  gettypes("coreference", language)
+                  let type= localStorage.getItem('AnnotationTypeC');
+                  if(type!=null){
+                      setE6(true)
+                      setAnnotationTypeC(type)
+                       let r = getAttributeAlternatives(schemerequestInstance, "coreference", language, type, null).then(x => {
+
+                                          if (x["alternatives"].length == 0) {
+
+                                                    setReq(false)
+                                                } else {
+                                                      setReq(true)
+                                                     }
+            // }
+
+            setAttributeAlternatives(x["alternatives"])
+        })
+                     let attribute_alternative=localStorage.getItem("AttributeAlternativeC")
+                            if(attribute_alternative!=null){
+                                setE7(true)
+                                 setAttributeAlternativeC(attribute_alternative)
+                                 let r = getCoreferenceAttributes(schemerequestInstance, "coreference", language, type, attribute_alternative).then(x => {
+
+                                     let attributes = []
+                                     for (let j = 0; j < x["attributes"].length; j++) {
+                                                //console.log(x["attributes"][j].attribute)
+                                                 attributes.push(x["attributes"][j].attribute)
+                                                     }
+
+                                      if (x["attributes"].length == 0) {
+                // setAnnotationTypeRequiredB(false)
+                                              setReq(false)
+                                                  } else {
+                                               setReq(true)
+                                                       }
+
+                                     setCoreferenceAttributes(attributes)
+
+                                     })
+
+                            }
+
+
+                  }
+
+             }
+
+
+        }
+
+
+    }
 
 
 
+    useEffect(() => {
+        //retrieve options
 
-useEffect(() => { getlanguages("button")}, []);
+
+
+       // console.log("executed1")
+        getlanguages("button")
+        RetrieveLastOptions("button")
+        RetrieveLastOptions("coreference")
+    }, []);
 
  return (
         <div>

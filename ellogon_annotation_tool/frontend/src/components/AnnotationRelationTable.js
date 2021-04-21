@@ -14,7 +14,7 @@ class AnnotationRelationTable extends Component {
         return(
              <td colSpan="2">
 
-            <div class="button-widget-relation"><table class="table"><tbody>
+            <div className="button-widget-relation"><table class="table"><tbody>
             </tbody>
              {this.props.uielement}
             </table>
