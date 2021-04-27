@@ -72,3 +72,8 @@ class Document(models.Model):
 
     class Meta:
         unique_together = ('name', 'owner','collection','project')
+
+class Handler(models.Model):
+    auto_increment_id = models.AutoField(primary_key=True)
+    name = models.CharField("Name", max_length=128,unique=True)
+    function_name=models.CharField("FunctionName", max_length=128)

@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from rest_framework import serializers
-from .models import Project, Collection, Document
+from .models import Project, Collection, Document, Handler
 from authentication.models import CustomUser
 
 class ProjectSerializer(serializers.ModelSerializer):
@@ -72,3 +72,9 @@ class DocumentSerializer(serializers.ModelSerializer):
         model = Document
         fields = '__all__'
 
+class HandlerSerializer(serializers.ModelSerializer):
+    name = serializers.CharField(max_length=128)
+    function_name=serializers.CharField(max_length=128)
+    class Meta:
+        model = Handler
+        fields = '__all__'

@@ -10,8 +10,10 @@ from django.http import HttpRequest
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from authentication.models import CustomUser
-from .models import Project, Collection, Document
-from .serializers import ProjectSerializer, CollectionSerializer, DocumentSerializer
+
+from .handlers import HandlerClass
+from .models import Project, Collection, Document, Handler
+from .serializers import ProjectSerializer, CollectionSerializer, DocumentSerializer, HandlerSerializer
 
 
 class ProjectCreate(APIView):
@@ -331,14 +333,47 @@ class RetrieveUserData(APIView):
         return Response(data={"userdata": userdata}, status=status.HTTP_200_OK)
 
 
-
-
-
-
-
-
-
 class MainView(APIView):
 
     def get(self, request):
         return Response(data={"hello": "world"}, status=status.HTTP_200_OK)
+
+
+class HandlerCreate(APIView):
+    def post(self,request,format='json'):
+        try:
+            data=request.data
+            name=data["name"]
+            function_name=data["function_name"]
+        except Exception as e:
+            print(e)
+            return Response({"created": "failed"}, status=status.HTTP_400_BAD_REQUEST)
+        print(data)
+        serializer = HandlerSerializer(data=data)
+        if serializer.is_valid():
+            handler = serializer.save()
+            if handler:
+                json = serializer.data
+                return Response(json, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class HandlerApply(APIView):
+    def post(self,request,format='json'):
+        try:
+            print(request.data)
+            data=request.data
+            binary_file=data["binary_file"]
+            type=data["type"]
+            handler_name=data["handler_name"]
+        except Exception as e:
+            print(e)
+            return Response({"error": "field_not_exist"}, status=status.HTTP_400_BAD_REQUEST)
+        print(data)
+        handler_exists=Handler.objects.filter(name=handler_name).exists()
+        if( handler_exists==True):
+                 handler=HandlerClass(binary_file,type)
+                 json=handler.apply()
+                 print(json)
+                 return Response(json, status=status.HTTP_200_OK)
+        else:
+            return Response({"error": "handler_not_exist"}, status=status.HTTP_400_BAD_REQUEST)
