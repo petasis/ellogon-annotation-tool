@@ -72,10 +72,10 @@ def parse_button_response(response_text):
     for i in range(buttons_count):
         idx = re.match('.*?([0-9]+)$', mybuttons[i].get("id")).group(1)
         labelk=(mybuttons[i].get("label"))
-        x = labelk.replace('\\n','')
-        labelk=""
-        for item in x:
-            labelk=labelk+" "+item
+        labelk = labelk.replace('\\n',' ')
+        # labelk=""
+        # for item in x:
+        #     labelk=labelk+" "+item
         brecord = {"id": int(idx), "title": mybuttons[i].get("button-tooltip"), "label": labelk,
                    "color": mybuttons[i].get("bg-color"), "type": "annotation-button",
                    "colspan": mybuttons[i].parent.get("colspan")}
