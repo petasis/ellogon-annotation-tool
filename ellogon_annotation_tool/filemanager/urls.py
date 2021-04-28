@@ -1,6 +1,6 @@
 from .views import ProjectCreate, ProjectDelete, ProjectUpdate, CollectionCreate, CollectionDelete, \
     CollectionUpdate, DocumentUpload, DocumentDelete, DocumentUpdate, RetrieveUserData, MainView, DocumentOpen, \
-    RetrieveUserDataDetails
+    RetrieveUserDataDetails, HandlerCreate, HandlerApply
 from django.urls import path
 urlpatterns = [
     path('project/create/', ProjectCreate.as_view(), name="create_project"),
@@ -15,6 +15,8 @@ path('document/update/', DocumentUpdate.as_view(), name="update_document"),
 path('document/open/', DocumentOpen.as_view(), name="open_document"),
 path('retrieve_userdata/<email>', RetrieveUserData.as_view(), name="retrieve_userdata"),
 path('retrieve_userdata_details/<email>', RetrieveUserDataDetails.as_view(), name="retrieve_userdata_details"),
-path('main/', MainView.as_view(), name="mainview")
+path('main/', MainView.as_view(), name="mainview"),
+path('handler/create/',HandlerCreate.as_view(),name="create_handler"),
+path('handler/apply/',HandlerApply.as_view(),name="apply_handler")
 
     ]
