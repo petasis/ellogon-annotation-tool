@@ -1,4 +1,7 @@
 from abc import ABC, abstractmethod
+import json
+
+from .TEI import TeiReader
 
 
 class AbstractHandlerClass(ABC):
@@ -13,7 +16,6 @@ class AbstractHandlerClass(ABC):
       pass
 
 
-
 class HandlerClass(AbstractHandlerClass):
     def __init__(self, binaryfile, type):
         super().__init__(binaryfile,type)
@@ -23,13 +25,25 @@ class HandlerClass(AbstractHandlerClass):
         return {"text":"text"}
 
     def applytei(self):
-        return {"text": "text", "styleformat": {}}
+        reader = TeiReader()
+        if isinstance(self.binaryfile, str):
+            text = self.binaryfile
+        else:
+            text = self.binaryfile.read().decode("utf-8")
+        items = []
+
+        corpus = reader.read_string(text)
+        for doc in corpus.documents:
+            content = doc.text
+            content.iterate()
+            items.append({"text":  content.text_with_notes,
+                          "marks": [x.to_dict() for x in content.marks_with_notes]})
+        return {"documents": items}
 
     def apply(self):
         function_name = "apply" + self.type
         apply_method = getattr(HandlerClass, function_name)
         result = apply_method(self)
-        print(result)
         #apply_method = getattr(C, "m")
         return result
 
