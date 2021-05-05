@@ -48,7 +48,7 @@ class HandlerClass(AbstractHandlerClass):
                     gutter.insert(mark.start.line, "")
             items.append({"text":  text, "info": {
                 "marks": [x.to_dict() for x in marks],
-                "gutter": gutter[:len(lines)]
+                "gutter": gutter[:len(lines)+2]
             }})
         return {"documents": items}
 

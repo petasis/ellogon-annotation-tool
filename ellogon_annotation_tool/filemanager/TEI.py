@@ -138,7 +138,8 @@ class Processor(Element):
 
     @property
     def text_with_notes(self):
-        return self.text+"\n"+self.notes
+        t = self.text+"\n"+self.notes
+        return t.strip()
 
     @property
     def marks_with_notes(self):
