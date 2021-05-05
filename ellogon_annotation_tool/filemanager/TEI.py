@@ -45,11 +45,11 @@ class Element:
 @dataclass
 class Position:
     line:   int
-    char:   int
+    ch:     int
     offset: int
     #def __init__(self, l=0, c=0, o=0):
     #    self.line   = l
-    #    self.char   = c
+    #    self.ch     = c
     #    self.offset = o
     #def __str__(self):
     #    return self.__dict__.__str__()
