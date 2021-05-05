@@ -36,8 +36,20 @@ class HandlerClass(AbstractHandlerClass):
         for doc in corpus.documents:
             content = doc.text
             content.iterate()
-            items.append({"text":  content.text_with_notes,
-                          "marks": [x.to_dict() for x in content.marks_with_notes]})
+            text  = content.text_with_notes
+            marks = content.marks_with_notes
+            ## Calculate an array that maps lines to "gutter" lines...
+            lines = text.splitlines()
+            gutter = [str(i) for i in range(1,len(lines)+1)]
+            ## Iterate over marks, and select the "silent" ones...
+            silent_marks = ["stage", "speaker"]
+            for mark in marks:
+                if mark.start.ch == 0 and mark.tags in silent_marks:
+                    gutter.insert(mark.start.line, "")
+            items.append({"text":  text, "info": {
+                "marks": [x.to_dict() for x in marks],
+                "gutter": gutter[:len(lines)]
+            }})
         return {"documents": items}
 
     def apply(self):
@@ -46,9 +58,3 @@ class HandlerClass(AbstractHandlerClass):
         result = apply_method(self)
         #apply_method = getattr(C, "m")
         return result
-
-
-
-
-
-

@@ -83,6 +83,7 @@ class Processor(Element):
         self.marks_allow        = [
             "speaker", "stage", "quote", "emph", "note", "noteindex"
         ]
+        self.newline_just_added = False
         self.is_note            = False
         self.node_index         = 1
         self.start_line         = 0 # = {"line": 0, "char": 0, "offset": 0}
@@ -108,6 +109,7 @@ class Processor(Element):
     def from_p(self, processor):
         # print(processor, "=>", self)
         self.marks_allow        = processor.marks_allow
+        self.newline_just_added = processor.newline_just_added
         self.is_note            = processor.is_note 
         self.node_index         = processor.node_index
         self.text               = processor.text
@@ -180,6 +182,7 @@ class Processor(Element):
             return
         l = len(text)
         if (not self.is_note):
+            self.newline_just_added = False
             #self.start = copy.deepcopy(self.end)
             self.start_line   = self.end_line
             self.start_char   = self.end_char
@@ -199,6 +202,10 @@ class Processor(Element):
 
     def append_newline(self):
         if (not self.is_note):
+            if (self.newline_just_added):
+                self.newline_just_added = False
+                return
+            self.newline_just_added = True
             #self.start = copy.deepcopy(self.end)
             self.start_line   = self.end_line
             self.start_char   = self.end_char
@@ -259,7 +266,7 @@ class Processor(Element):
         self.process_node(node, obj, add_newline=True);
 
     def tag_speaker(self, node, obj=None):
-        self.append_newline()
+        # self.append_newline()
         self.process_node(node, obj, add_newline=True);
 
     def tag_stage(self, node, obj=None):
