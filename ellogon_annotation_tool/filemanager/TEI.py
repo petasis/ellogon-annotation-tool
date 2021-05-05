@@ -81,7 +81,7 @@ class Processor(Element):
 
     def init(self):
         self.marks_allow        = [
-            "speaker", "stage", "quote", "emph", "note"
+            "speaker", "stage", "quote", "emph", "note", "noteindex"
         ]
         self.is_note            = False
         self.node_index         = 1
@@ -144,7 +144,7 @@ class Processor(Element):
         return self.marks + self._displace(self.notes_marks, d)
 
     def _displace_position(self, p1, p2):
-        return Position(p1.line+p2.line, p1.char+p2.char, p1.offset+p2.offset)
+        return Position(p1.line+p2.line, p1.ch+p2.ch, p1.offset+p2.offset)
 
     def _displace_mark(self, m, d):
         return Mark(self._displace_position(m.start, d),
