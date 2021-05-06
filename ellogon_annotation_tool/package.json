@@ -49,6 +49,7 @@
     "react-icons": "^4.2.0",
     "react-pro-sidebar": "^0.6.0",
     "react-router-dom": "^5.2.0",
+    "react-split-pane": "^0.1.92",
     "react-toggle-button": "^2.2.0",
     "react-treelist": "^1.2.0",
     "react-window": "^1.8.6",

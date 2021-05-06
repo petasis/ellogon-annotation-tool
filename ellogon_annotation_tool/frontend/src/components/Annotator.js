@@ -63,7 +63,7 @@ const useStyles = makeStyles((theme) => ({
         marginTop: 30,
     },
     myTab:{
-        maxWidth: 700,
+        // maxWidth: 700,
     },
     titleStyle:{
 color: 'red',
@@ -105,7 +105,6 @@ function TabPanelC(props) {
 export default function Annotator(props) {
     const classes = useStyles();
     const [annotatedisabled,SetAnnotateDisabled]=useState(true);
-
     const [markedcolor,SetMarkedColor]=React.useState("");
      const [markedfield,SetMarkedField]=React.useState("");
       const [markedfieldtitle,SetMarkedFieldTitle]=React.useState("");
@@ -130,7 +129,7 @@ export default function Annotator(props) {
      const prev_arg2=useRef();
      const [relation_arg1,setRelationArg1]=React.useState(-1)
       const [relation_arg2,setRelationArg2]=React.useState(-1)
-      const [corefCounter, setCorefCounter] = useState(0);
+      const [anBarCounter, setAnBarCounter] = useState(0);
       let relval=0
     const [, updateState] = React.useState();
     const forceUpdate = React.useCallback(() => updateState({}), []);
@@ -676,11 +675,12 @@ useEffect(() => {
                  setViewshow(props.viewshow)}*/
             }
 
-            if (props.displayCoref === true && corefCounter < props.corefCount){
-            console.log("COREF")
-            CreateAnnottatorCUI(props.uistructure)
-            setCorefCounter(props.corefCount)
-        }
+            if (props.displayAnBar === true && anBarCounter < props.barCount){
+                console.log("DRAW ANNOTATOR SIDE BAR")
+                if (props.uistructure.kind=="button") CreateAnnottatorUI(props.uistructure)
+                    else  CreateAnnottatorCUI(props.uistructure)
+                setAnBarCounter(props.barCount)
+            }
 
     //    let textfields=["when","where","reporter_location","main","secondary"]
         if( prevmarkedfieldRef.current!=markedfield){
@@ -775,7 +775,7 @@ useEffect(() => {
                     </div>
                 </div>
 
-<div className="coreference-bar" style={{display: props.displayCoref ? "block" : "none", float:"right",width:"40%" }}>
+<div className="coreference-bar" style={{display: props.displayAnBar ? "block" : "none", float:"right"}}>
               <div className="modal-body">
                   <AppBar position="static">
                       <Tabs value={tabValuec} onChange={handleTabChange}>

@@ -52,7 +52,7 @@ class AnnotationButton extends Component {
                 <button type="button" title={this.props.title} className="btn btn-default btn-sm btn-block annotation-btn"
                         style={{backgroundColor:(this.props.markedfield===this.props.label)?this.props.color: this.state.background_color}}
                         label= {this.props.label}>
-                    <span style={{backgroundColor:this.state.background_color,float:"left"}}>
+                    <span style={{backgroundColor:this.state.background_color,float:"left", width:"max-content"}}>
                         <FontAwesomeIcon style={{
                             float: "left",
                             color:this.props.color,

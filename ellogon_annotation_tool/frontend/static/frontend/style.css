@@ -17,8 +17,28 @@ html{
 }
 
 h1,h2,h3,h4,h5,h6,label,span {
-  font-weight: 500;
+  font-weight: 100;
   font-family: 'Fira Sans', sans-serif;
+}
+
+h6{
+  font-size: 0.9rem;
+  /*width: max-content;*/
+}
+
+.table th,
+.table td {
+    width: max-content;
+  padding: 1px;
+}
+
+.btn-sm {
+  padding: 2px 0px;
+  font-size: 12px;
+  line-height: 1.5;
+  border-radius: .2rem;
+  height: 24px;
+  margin: 2px 0px;
 }
 
 body, html, .App, #root, .auth-wrapper {
@@ -147,4 +167,62 @@ margin-right: auto;
 padding: .3rem;
 vertical-align: top;
 }
+
+/*///////////////////////////////////////////////////////////////////////////*/
+.Resizer {
+  position: relative;
+  background: #a7c2dda3;
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+  -moz-background-clip: padding;
+  -webkit-background-clip: padding;
+  background-clip: padding-box;
+  flex-shrink: 0;
+}
+
+
+
+.Resizer.horizontal {
+  height: 11px;
+  margin: -5px 0;
+  border-top: 5px solid rgba(255, 255, 255, 0);
+  border-bottom: 5px solid rgba(255, 255, 255, 0);
+  cursor: row-resize;
+  width: 100%;
+}
+
+.Resizer.vertical {
+  width: 25px;
+  /*margin: 0 -5px;*/
+  border-left: 5px solid rgba(255, 255, 255, 0);
+  border-right: 5px solid rgba(255, 255, 255, 0);
+  cursor: col-resize;
+  flex-shrink: 0;
+}
+
+.Resizer.disabled {
+  cursor: not-allowed;
+}
+.Resizer.disabled:hover,
+.Resizer.disabled:active {
+  border-color: transparent;
+}
+
+.Resizer::after,
+.Resizer::before {
+  content: "";
+  border-left: 1px solid #333;
+  position: absolute;
+  top: 25%;
+  /*transform: translateY(-100%);*/
+  right: 0;
+  display: inline-block;
+  height: 20px;
+  margin: 0 2px;
+}
+.Resizer::before {
+  left: 0;
+}
+
 

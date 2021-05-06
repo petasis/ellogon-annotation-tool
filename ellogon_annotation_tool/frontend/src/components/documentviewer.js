@@ -2,16 +2,13 @@ import React, { Component } from "react";
 import ReactDOM from 'react-dom';
 import requestInstance from "../requestAPI";
 import {UnControlled as CodeMirror} from 'react-codemirror2'
-import {FaTimes} from "react-icons/fa";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {ProSidebar} from "react-pro-sidebar";
 import AnnotationsView from "./AnnotationsView";
-
+import SplitPane from "react-split-pane";
 import SelectAnnotationSchema from "./SelectAnnotationSchema";
 import Annotator from "./Annotator";
 import AddCustomValue from "./AddCustomValue";
 import {Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle} from "@material-ui/core";
-import TableBody from "@material-ui/core/TableBody";
 import Xarrow from "react-xarrows";
 
 class DocumentViewer extends Component {
@@ -19,7 +16,6 @@ class DocumentViewer extends Component {
         super(props);
         //  this.annotator = React.createRef();
         this.editorref=React.createRef();
-
         this.state = {
             filename: "",
             text: "",
@@ -51,12 +47,10 @@ class DocumentViewer extends Component {
             selected_annotation_id: -1,
             autosave: false,
             closewarning: false,
-            showCoref:false,
-            corefC:0,
+            showAnBar:false,
+            anBar:0,
             relation_attributes:[],
             relation_arrows:[]
-
-
         }
         this.DeleteSelectedAnnotation = this.DeleteSelectedAnnotation.bind(this)
         this.DeleteAnnotation = this.DeleteAnnotation.bind(this)
@@ -79,11 +73,12 @@ class DocumentViewer extends Component {
         this.AddCustomValueBtn = this.AddCustomValueBtn.bind(this)
         this.ChangeWarningDialogState = this.ChangeWarningDialogState.bind(this)
         this.handleChanges=this.handleChanges.bind(this)
-        this.setShowCoref=this.setShowCoref.bind(this)
-        this.SetCorefC=this.SetCorefC.bind(this)
+        this.setShowAnBar=this.setShowAnBar.bind(this)
+        this.setAnBar=this.setAnBar.bind(this)
         this.setRelation=this.setRelation.bind(this)
         this.fixRelationVectors=this.fixRelationVectors.bind(this)
     }
+
     setRelation(arg1,arg2,type){
         console.log("set_relations")
         let argument_relation={arg1:arg1,arg2:arg2,type:type}
@@ -121,12 +116,9 @@ class DocumentViewer extends Component {
                     relation_attributes: [...prevState.relation_attributes, argument_relation],
                     relation_arrows:[...prevState.relation_arrows, relation_connector]
 
-
               }),function(){
                   console.log(this.state.relation_attributes)
                   console.log(this.state.relation_arrows)
-
-
               })
 
 
@@ -666,14 +658,14 @@ class DocumentViewer extends Component {
 
 }
 
-    setShowCoref(status)
+    setShowAnBar(status)
         {
-            this.setState({showCoref:status})
+            this.setState({showAnBar:status})
         }
 
-        SetCorefC()
+        setAnBar()
         {
-            this.setState({corefC: this.state.corefC + 1})
+            this.setState({anBar: this.state.anBar + 1})
         }
 
 
@@ -696,16 +688,16 @@ class DocumentViewer extends Component {
 
         this.setState({schema_info: response})
         console.log(response)
-         if (this.state.schema_info['kind'] === "coreference")
+         if (this.state.schema_info['kind'] !==null)
             {
-                this.setShowCoref(true)
+                this.setShowAnBar(true)
             }
             else
             {
-                this.setShowCoref(false)
+                this.setShowAnBar(false)
             }
 
-            this.SetCorefC()
+            this.setAnBar()
 
 
 
@@ -745,9 +737,8 @@ class DocumentViewer extends Component {
             let data = this.getText();
         }
 
-         if (this.state.corefC !== prevState.corefC && prevState.corefC!==null)
+         if (this.state.anBar !== prevState.anBar && prevState.anBar!==null)
             {
-
                 this.forceUpdate()
             }
 
@@ -853,283 +844,178 @@ class DocumentViewer extends Component {
 
 
 
-        render()
-        {
-            const boxStyle = {
-                        border: "grey solid 2px",
-                        borderRadius: "10px",
-                        padding: "5px",
-                        };
-            //   console.log(this.state.text)
-            /* const valuek = <div>
-                 <h1>Name:{this.props.location.state.filename}</h1>
-                 <h3>
-                     Collection:{this.props.location.state.collection}
-                 </h3>
-                 <h3>
-                     Project:{this.props.location.state.project}
-                 </h3>
-             </div>
-             const options = {}*/
-            // change font and letter size
-            //load correct file from db
-            return (
-                <div>
-
-                    <div className="Sticky">
-
-                        <FontAwesomeIcon style={{
-                            marginRight: "5%",
-                            marginLeft: "1%",
-                            cursor: "pointer",
-                            color: "black",
-                            backgroundColor: this.state.selectoptions[0]
-                        }} className="fas folder-open fa-2x" icon="folder-open"
-                                         onMouseEnter={() => this.SelectMenuItem(0, "aquamarine")}
-                                         onMouseLeave={() => this.SelectMenuItem(0, "transparent")}
-                                         onClick={() => this.ViewForm("schema")}></FontAwesomeIcon>
-                       <FontAwesomeIcon style={{
-                            marginRight: "5%",
-                            marginLeft: "1%",
-                            cursor: "pointer",
-                            color: "black",
-                            display:this.state.add_custom_value_display,
-                            backgroundColor: this.state.selectoptions[6]
-                        }} className="fas fa-plus-circle fa-2x" icon="plus-circle"
-                                         onMouseEnter={() => this.SelectMenuItem(6, "aquamarine")}
-                                         onMouseLeave={() => this.SelectMenuItem(6, "transparent")}
-                                         onClick={() => this.ViewForm("add-custom-value")}></FontAwesomeIcon>
-                        <FontAwesomeIcon style={{
-                            marginRight: "5%",
-                            cursor: "pointer",
-                            color: (this.state.options_status[1] == "enabled") ? "black" : "gray",
-                            backgroundColor: this.state.selectoptions[1]
-                        }} className="fas fa-highlighter fa-2x" icon="highlighter"
-                                         onClick={() => this.ViewForm("annotator")}
-                                         onMouseEnter={() => this.SelectMenuItem(1, "aquamarine")}
-                                         onMouseLeave={() => this.SelectMenuItem(1, "transparent")}
-                                        ></FontAwesomeIcon>
-
-
-
-
-                        {/*      <FontAwesomeIcon style={{
-                            marginRight: "5%",
-                            cursor: "pointer",
-                            color: "black",
-                            display:this.state.add_custom_value_display,
-                            backgroundColor: this.state.selectoptions[6]
-                        }} className="fas fa-plus-circle" icon="plus-circle"
-                                        // onClick={() => this.ViewForm("annotator")}
-                                         onMouseEnter={() => this.SelectMenuItem(6, "aquamarine")}
-                                         onMouseLeave={() => this.SelectMenuItem(6, "transparent")}
-                                        ></FontAwesomeIcon>
-                    */}
-
-
-
-
-
-                        <span>
-                        <FontAwesomeIcon style={{
-
-                            cursor: "pointer",
-                            color: (this.state.options_status[2] == "enabled") ? "black" : "gray",
-                            backgroundColor: this.state.selectoptions[2]
-                        }} className="far fa-save fa-2x" icon="save"
-                                         onMouseEnter={() => this.SelectMenuItem(2, "aquamarine")}
-                                         onMouseLeave={() => this.SelectMenuItem(2, "transparent")}>
-
-
-
-                        </FontAwesomeIcon>
-                         <FontAwesomeIcon style={{
-                            marginRight: "5%",
-                            cursor: "pointer",
-                            color: (this.state.options_status[2] == "enabled") ? "black" : "gray",
-                            backgroundColor: this.state.selectoptions[2]
-                        }} className={(this.state.autosave)? "fas fa-circle fa-xs":"far fa-circle fa-xs"} icon={(this.state.autosave)?['fas', 'circle']:['far', 'circle']}
-                          onClick={() => {
-                              if (this.state.options_status[2] == "enabled"){
-                              this.setState({autosave:!this.state.autosave},function(){
-                                  console.log(this.state.autosave)
-                                  console.log("autosave status changed")}
-                              )
-                          }
-
-                          }}
-                         ></FontAwesomeIcon>
-
-
-                        </span>
-                        <FontAwesomeIcon style={{
-                            marginRight: "5%",
-                            cursor: "pointer",
-                            color: (this.state.options_status[3] == "enabled") ? "black" : "gray",
-                            backgroundColor: this.state.selectoptions[3]
-                        }} className="fas fa-list fa-2x" icon="list"
-                                         onClick={this.ViewAnnotations}
-                                         onMouseEnter={() => this.SelectMenuItem(3, "aquamarine")}
-                                         onMouseLeave={() => this.SelectMenuItem(3, "transparent")}></FontAwesomeIcon>
-                        <FontAwesomeIcon style={{
-                            marginRight: "5%",
-                            cursor: "pointer",
-                            color: (this.state.options_status[4] == "enabled") ? "black" : "gray",
-                            backgroundColor: this.state.selectoptions[4]
-                        }} className="far fa-trash fa-2x" icon="trash"
-                                         onMouseEnter={() => this.SelectMenuItem(4, "aquamarine")}
-                                         onMouseLeave={() => this.SelectMenuItem(4, "transparent")}
-                                         onClick={this.DeleteSelectedAnnotation}
-                        ></FontAwesomeIcon>
-                        <FontAwesomeIcon style={{
-                            marginRight: "5%",
-                            cursor: "pointer",
-                            color: "black",
-                            backgroundColor: this.state.selectoptions[5]
-                        }} className="far fa-window-close fa-2x" icon="window-close"
-                                         onMouseEnter={() => this.SelectMenuItem(5, "aquamarine")}
-                                         onMouseLeave={() => this.SelectMenuItem(5, "transparent")}
-                                         onClick={()=>this.ChangeWarningDialogState(true)}></FontAwesomeIcon>
-
-
-
-
-
-
-                        <span title={this.state.tooltip_title}  style={{display:"inline-block",backgroundColor:"#DCDCDC",color:(this.state.tooltip_state)?"black":"gray", cursor: "pointer",
-
-                            fontSize:"large"}}>{this.state.tooltip_label}</span>
-                        {/*       <FaTimes size={22} onClick={this.props.ReturnMain} style={{cursor: "pointer",position:"absolute",top:0,right:0}} />*/}
-                    </div>
-
-                    <div  className="main-document" style={{width: this.state.showCoref ? "60%" : "100%", float:"left"}}>
-
-
-
-                        <CodeMirror ref={this.editorref}
-                            value={this.state.text}
-                            options={{
-
-                                lineWrapping: true,
-                                lineNumbers: true,
-                                readOnly: true,
-                                autoRefresh: true
-
-                            }}
-                            onChange={(editor, data, value) => {
-                            }}
-                            onSelection={(editor, data) => {
-                                this.getSelectedText(editor, data)
-                                // console.log(editor)
-                                // console.log(data)
-
-                            }}
-                            onScroll={(editor, data) => {
-                                this.fixRelationVectors()
-
-
-                            }}
-                            editorDidMount={(editor) => this.setEditor(editor)}
-                            onCursor={(editor, data)=> this.ShowAnnotationType(editor,data)}
-
-
-
-                        />
-                        {/*  style={{overflow: "auto",position: "relative",
-                        display: "flex"}}*/}
-
-                        {(this.state.relation_attributes.length>0) ? <div id="relations">
-                                 {this.state.relation_arrows.map((arrow) => (
-
-
-                                                  <Xarrow
-                                        start={arrow.anchor}
-                                      end={arrow.head}
-
-
-                                         label={<div style={{ fontSize: "large"}}>{arrow.label}</div>}
-                                        color={arrow.line_color}
-                                            strokeWidth={2}
-                                            _extendSVGcanvas={15}
-
-                                     />
-                                        ))}
-
-
-
-
-
-
-                      </div>:null}
-
-
-
-                    </div>
-                    <SelectAnnotationSchema SelectAnnotationScheme={this.SelectAnnotationScheme}
-                                            HideSchemaForm={this.HideForm} viewshow={this.state.viewshow2}/>
-                    <Annotator  annotator_disabled={(this.state.selected_content=="" && this.state.selected_annotation_id==-1)?true:false} setDocumentAttributes={this.setDocumentAttributes}
-
-                        uistructure={this.state.schema_info} viewshow={this.state.annotator_view} HideSchemaForm={this.HideForm} AnnotateSelectedText={this.AnnotateSelectedText}
-                                selected_annotation_label={(this.state.selected_annotation_id!=-1)?this.state.tooltip_label:""}
-                        selected_annotation_title={(this.state.selected_annotation_id!=-1)?this.state.tooltip_title:""}
-                        selected_annotation_property={(this.state.selected_annotation_id!=-1)? this.state.annotation_properties[this.state.selected_annotation_id]:""}
-                        displayCoref={this.state.showCoref} corefCount={this.state.corefC}
-                        document_attributes={this.state.document_attributes}
-                        annotation_contents={this.state.annotation_contents}
-                         setRelation={this.setRelation}
-
-                    />
-                    <AnnotationsView HideAnnotations={this.HideAnnotations}
-                                         DeleteAnnotation={this.DeleteAnnotation}
-                                     viewshow={this.state.viewshow} annotator_params={{kind:this.state.schema_info['kind'],params:this.state.schema_info["params"]}}
-                                     annotations={this.state.annotations}  annotation_titles={this.state.annotation_titles} annotation_labels={this.state.annotation_labels}
-                                     annotation_properties={this.state.annotation_properties}
-                                     annotation_contents={this.state.annotation_contents}
-                                     document_attributes={this.state.document_attributes}
-                                     relation_attributes={this.state.relation_attributes}
-                                     selected_annotation_label={(this.state.selected_annotation_id!=-1)?this.state.tooltip_label:""}
-                                     selected_annotation_title={(this.state.selected_annotation_id!=-1)?this.state.tooltip_title:""}
-                                     selected_annotation_property={(this.state.selected_annotation_id!=-1)?this.state.annotation_properties[this.state.selected_annotation_id]:""}
-
-                    />
-                    <AddCustomValue AddCustomValueBtn={this.AddCustomValueBtn}  HideSchemaForm={this.HideForm}   add_custom_value_view={this.state.add_custom_value_view} />
-                    <div>
-                <Dialog
-                    open={this.state.closewarning}
-        onClose={()=>this.ChangeWarningDialogState(false)}
-        aria-labelledby="alert-dialog-title"
-        aria-describedby="alert-dialog-description"
-      >
-        <DialogTitle id="alert-dialog-title">{"Warning"}</DialogTitle>
-        <DialogContent>
-          <DialogContentText id="alert-dialog-description">
-           It seems that you have done changes on the document that have not been saved. What do you want to do?
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={()=>this.handleChanges("s")} color="primary">
-            Save Changes
-          </Button>
-          <Button onClick={()=>this.handleChanges("d")} color="primary">
-            Continue without saving
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-                    </div>
-
-
-
-
-
-
-
+render()
+{
+    const boxStyle = {
+                border: "grey solid 2px",
+                borderRadius: "10px",
+                padding: "5px",
+    };
+    return (
+        <div>
+            <div className="Sticky">
+                <FontAwesomeIcon style={{
+                    marginRight: "5%",
+                    marginLeft: "1%",
+                    cursor: "pointer",
+                    color: "black",
+                    backgroundColor: this.state.selectoptions[0]}}
+                                 className="fas folder-open fa-2x" icon="folder-open"
+                                 onMouseEnter={() => this.SelectMenuItem(0, "aquamarine")}
+                                 onMouseLeave={() => this.SelectMenuItem(0, "transparent")}
+                                 onClick={() => this.ViewForm("schema")}/>
+               <FontAwesomeIcon style={{
+                   marginRight: "5%",
+                    marginLeft: "1%",
+                    cursor: "pointer",
+                    color: "black",
+                    display: this.state.add_custom_value_display,
+                    backgroundColor: this.state.selectoptions[6]}}
+                                className="fas fa-plus-circle fa-2x" icon="plus-circle"
+                                onMouseEnter={() => this.SelectMenuItem(6, "aquamarine")}
+                                onMouseLeave={() => this.SelectMenuItem(6, "transparent")}
+                                onClick={() => this.ViewForm("add-custom-value")}/>
+                <FontAwesomeIcon style={{
+                    marginRight: "5%",
+                    cursor: "pointer",
+                    color: (this.state.options_status[1] == "enabled") ? "black" : "gray",
+                    backgroundColor: this.state.selectoptions[1]}}
+                                 className="fas fa-highlighter fa-2x" icon="highlighter"
+                                 onClick={() => this.ViewForm("annotator")}
+                                 onMouseEnter={() => this.SelectMenuItem(1, "aquamarine")}
+                                 onMouseLeave={() => this.SelectMenuItem(1, "transparent")}/>
+                <span>
+                    <FontAwesomeIcon style={{
+                        cursor: "pointer",
+                        color: (this.state.options_status[2] == "enabled") ? "black" : "gray",
+                        backgroundColor: this.state.selectoptions[2]}}
+                                     className="far fa-save fa-2x" icon="save"
+                                     onMouseEnter={() => this.SelectMenuItem(2, "aquamarine")}
+                                     onMouseLeave={() => this.SelectMenuItem(2, "transparent")}/>
+                     <FontAwesomeIcon style={{
+                         marginRight: "5%",
+                         cursor: "pointer",
+                         color: (this.state.options_status[2] == "enabled") ? "black" : "gray",
+                         backgroundColor: this.state.selectoptions[2]}}
+                                      className={(this.state.autosave) ? "fas fa-circle fa-xs" : "far fa-circle fa-xs"}
+                                      icon={(this.state.autosave) ? ['fas', 'circle'] : ['far', 'circle']}
+                                      onClick={() => {
+                                          if (this.state.options_status[2] == "enabled") {
+                                              this.setState({autosave: !this.state.autosave}, function () {
+                                                  console.log(this.state.autosave)
+                                                  console.log("autosave status changed")})}}}/>
+                </span>
+                <FontAwesomeIcon style={{
+                    marginRight: "5%",
+                    cursor: "pointer",
+                    color: (this.state.options_status[3] == "enabled") ? "black" : "gray",
+                    backgroundColor: this.state.selectoptions[3]}}
+                                 className="fas fa-list fa-2x"
+                                 icon="list"
+                                 onClick={this.ViewAnnotations}
+                                 onMouseEnter={() => this.SelectMenuItem(3, "aquamarine")}
+                                 onMouseLeave={() => this.SelectMenuItem(3, "transparent")}/>
+                <FontAwesomeIcon style={{
+                    marginRight: "5%",
+                    cursor: "pointer",
+                    color: (this.state.options_status[4] == "enabled") ? "black" : "gray",
+                    backgroundColor: this.state.selectoptions[4]}}
+                                 className="far fa-trash fa-2x"
+                                 icon="trash"
+                                 onMouseEnter={() => this.SelectMenuItem(4, "aquamarine")}
+                                 onMouseLeave={() => this.SelectMenuItem(4, "transparent")}
+                                 onClick={this.DeleteSelectedAnnotation}/>
+                <FontAwesomeIcon style={{
+                    marginRight: "5%",
+                    cursor: "pointer",
+                    color: "black",
+                    backgroundColor: this.state.selectoptions[5]}}
+                                 className="far fa-window-close fa-2x"
+                                 icon="window-close"
+                                 onMouseEnter={() => this.SelectMenuItem(5, "aquamarine")}
+                                 onMouseLeave={() => this.SelectMenuItem(5, "transparent")}
+                                 onClick={() => this.ChangeWarningDialogState(true)}/>
+                <span title={this.state.tooltip_title}
+                      style={{display:"inline-block",backgroundColor:"#DCDCDC",color:(this.state.tooltip_state)?"black":"gray", cursor: "pointer", fontSize:"large"}}>{this.state.tooltip_label}</span>
+            </div>
+            <SplitPane split="vertical" minSize={200} defaultSize={"80%"} maxSize={-200} style={{position: "relative"}}>
+                <div  className="main-document" style={{float:"left"}}>
+                    <CodeMirror ref={this.editorref}
+                                value={this.state.text}
+                                options={{
+                                    lineWrapping: true,
+                                    lineNumbers: true,
+                                    readOnly: true,
+                                    autoRefresh: true}}
+                                onChange={(editor, data, value) => {}}
+                                onSelection={(editor, data) => {this.getSelectedText(editor, data)
+                                    // console.log(editor)
+                                    // console.log(data)
+                                }}
+                                onScroll={(editor, data) => {this.fixRelationVectors()}}
+                                editorDidMount={(editor) => this.setEditor(editor)}
+                                onCursor={(editor, data)=> this.ShowAnnotationType(editor,data)}/>
+                                {(this.state.relation_attributes.length>0) ?
+                                    <div id="relations">
+                                        {this.state.relation_arrows.map((arrow) => (
+                                            <Xarrow start={arrow.anchor}
+                                                    end={arrow.head}
+                                                    label={<div style={{ fontSize: "large"}}>{arrow.label}</div>}
+                                                    color={arrow.line_color}
+                                                    strokeWidth={2}
+                                                    _extendSVGcanvas={15}/>
+                                                    ))}
+                                    </div>:null}
                 </div>
-            )
-        }
-
-
-
-
-}
+                {/*<SelectAnnotationSchema SelectAnnotationScheme={this.SelectAnnotationScheme} HideSchemaForm={this.HideForm} viewshow={this.state.viewshow2}/>*/}
+                <Annotator  annotator_disabled={(this.state.selected_content=="" && this.state.selected_annotation_id==-1)?true:false}
+                            setDocumentAttributes={this.setDocumentAttributes}
+                            uistructure={this.state.schema_info}
+                            viewshow={this.state.annotator_view}
+                            HideSchemaForm={this.HideForm}
+                            AnnotateSelectedText={this.AnnotateSelectedText}
+                            selected_annotation_label={(this.state.selected_annotation_id!=-1)?this.state.tooltip_label:""}
+                            selected_annotation_title={(this.state.selected_annotation_id!=-1)?this.state.tooltip_title:""}
+                            selected_annotation_property={(this.state.selected_annotation_id!=-1)? this.state.annotation_properties[this.state.selected_annotation_id]:""}
+                            displayAnBar={this.state.showAnBar} barCount={this.state.anBar}
+                            document_attributes={this.state.document_attributes}
+                            annotation_contents={this.state.annotation_contents}
+                            setRelation={this.setRelation}/>
+            </SplitPane>
+            <SelectAnnotationSchema SelectAnnotationScheme={this.SelectAnnotationScheme} HideSchemaForm={this.HideForm} viewshow={this.state.viewshow2}/>
+            <AnnotationsView HideAnnotations={this.HideAnnotations}
+                             DeleteAnnotation={this.DeleteAnnotation}
+                             viewshow={this.state.viewshow} annotator_params={{kind:this.state.schema_info['kind'],params:this.state.schema_info["params"]}}
+                             annotations={this.state.annotations}  annotation_titles={this.state.annotation_titles} annotation_labels={this.state.annotation_labels}
+                             annotation_properties={this.state.annotation_properties}
+                             annotation_contents={this.state.annotation_contents}
+                             document_attributes={this.state.document_attributes}
+                             relation_attributes={this.state.relation_attributes}
+                             selected_annotation_label={(this.state.selected_annotation_id!=-1)?this.state.tooltip_label:""}
+                             selected_annotation_title={(this.state.selected_annotation_id!=-1)?this.state.tooltip_title:""}
+                             selected_annotation_property={(this.state.selected_annotation_id!=-1)?this.state.annotation_properties[this.state.selected_annotation_id]:""}/>
+            <AddCustomValue AddCustomValueBtn={this.AddCustomValueBtn}  HideSchemaForm={this.HideForm}   add_custom_value_view={this.state.add_custom_value_view} />
+            <div>
+                <Dialog open={this.state.closewarning}
+                        onClose={()=>this.ChangeWarningDialogState(false)}
+                        aria-labelledby="alert-dialog-title"
+                        aria-describedby="alert-dialog-description">
+                    <DialogTitle id="alert-dialog-title">{"Warning"}</DialogTitle>
+                    <DialogContent>
+                        <DialogContentText id="alert-dialog-description">
+                            It seems that you have done changes on the document that have not been saved. What do you want to do?
+                        </DialogContentText>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={()=>this.handleChanges("s")} color="primary">
+                            Save Changes
+                        </Button>
+                        <Button onClick={()=>this.handleChanges("d")} color="primary">
+                            Continue without saving
+                        </Button>
+                    </DialogActions>
+                </Dialog>
+            </div>
+        </div>
+    )}}
 export default DocumentViewer;
