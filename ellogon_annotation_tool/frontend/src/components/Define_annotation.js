@@ -615,7 +615,7 @@ const RetrieveLastOptions=(mode)=>{
                 </FormControl>
                 <div className={classes.root}>
                     <h6>Annotation Attributes:</h6>
-                       <FixedSizeList height={120} width={200} itemSize={30} itemCount={coreferenceattributes.length}>
+                       <FixedSizeList height={120} width={480} itemSize={30} itemCount={coreferenceattributes.length}>
                              {AttrValue}
                     </FixedSizeList>
                 </div>

@@ -129,7 +129,7 @@ class ResetPassword(APIView):
            reset_alert.send_resetpassword_email()
            return Response(data={"code": 1}, status=status.HTTP_200_OK)
         except Exception as e:
-            return Response(data={"code": 0}, status=status.HTTP_200_OK)
+           return Response(data={"code": 0}, status=status.HTTP_200_OK)
 
 
 class ManageProfileView(APIView):

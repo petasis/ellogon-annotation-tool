@@ -17,7 +17,7 @@ class Project(models.Model):
         return self.name
 
     class Meta:
-        unique_together = ('name', 'owner',)
+        unique_together = ('name', 'owner')
 
 
 #data={"name":"project1","encoding":"ASCII","public":false,"owner":"anto2520293@gmail.com"}
@@ -40,7 +40,7 @@ class Collection(models.Model):
         return self.name
 
     class Meta:
-        unique_together = ('name', 'owner','project')
+        unique_together = ('name', 'owner', 'project')
 
 
 class Document(models.Model):
@@ -53,7 +53,7 @@ class Document(models.Model):
     created       = models.DateTimeField("Date Created",default=datetime.now)
     updated       = models.DateTimeField("Date Updated",default=datetime.now)
 
-    public = models.BooleanField("Public", default=False)
+    public        = models.BooleanField("Public", default=False)
     updated_by    = models.ForeignKey(CustomUser,
                                       on_delete=models.SET_NULL,
                                       null=True,
@@ -65,7 +65,7 @@ class Document(models.Model):
                                       null=True,
                                       related_name="owned_by")
     collection    = models.ForeignKey(Collection,on_delete=models.CASCADE, null=True)
-    project = models.ForeignKey(Project, on_delete=models.CASCADE, null=True)
+    project       = models.ForeignKey(Project, on_delete=models.CASCADE, null=True)
 
     def __str__(self):
         return self.name
@@ -75,5 +75,8 @@ class Document(models.Model):
 
 class Handler(models.Model):
     auto_increment_id = models.AutoField(primary_key=True)
-    name = models.CharField("Name", max_length=128,unique=True)
-    function_name=models.CharField("FunctionName", max_length=128)
+    name              = models.CharField("Name", max_length=128, unique=True, default="UTF-8")
+    function_name     = models.CharField("FunctionName", max_length=128, default="UTF-8")
+
+    def __str__(self):
+        return self.name

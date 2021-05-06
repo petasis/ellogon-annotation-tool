@@ -11,6 +11,7 @@ def parse_button_response(response_text):
     record = {}
     id_numbers = []
     daid=-1
+   
     for h in mydivs:
         # print(h.parent.get("colspan"))
         # print(h.get("title"))
@@ -120,7 +121,7 @@ def parse_button_response(response_text):
             # print(row)
             if (len(row) > 0):
                 rows.append(row)
-
+            
             data_headers[group_index]["rows"] = rows
             rows = []
             row = []
