@@ -1,5 +1,0 @@
-[client]
-database = ellogon_annotation_tool
-user = ellogon_annotation_tool
-password = 1234567890
-default-character-set = utf8
