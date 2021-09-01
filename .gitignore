@@ -135,3 +135,4 @@ dmypy.json
 # Node modules
 node_modules/
 package-lock.json
+/DjangoClarin/clarin_backend/data/
