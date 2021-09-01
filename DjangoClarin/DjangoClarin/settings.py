@@ -102,13 +102,23 @@ WSGI_APPLICATION = 'DjangoClarin.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 
+
 DATABASES = {
+     #'default': {
+         #'ENGINE': 'django.db.backends.sqlite3',
+         #'NAME': BASE_DIR / 'db.sqlite3',
      'default': {
          'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3')},
-
+         'NAME': BASE_DIR / 'db.sqlite3',
+         #'ENGINE': 'django.db.backends.mysql',
+         #'OPTIONS': {
+         #    'read_default_file': str(BASE_DIR / 'my.cnf'),
+         #},
+     #}
+    'default': env.db()
+     }
+    # 'default': env.db()
 }
-
 
 
 
@@ -207,3 +217,6 @@ EMAIL_USER_SHARE_COLLECTION_BODY      = "This is an automatic email from {sender
 
 MONGO_DB_HOST=env("MONGO_DB_HOST")
 MONGO_DB_PORT=int(env("MONGO_DB_PORT"))
+MONGO_USERNAME=env("MONGO_USERNAME")
+MONGO_PASSWORD=env("MONGO_PASSWORD")
+MONGO_DATABASE=env("MONGO_DATABASE")

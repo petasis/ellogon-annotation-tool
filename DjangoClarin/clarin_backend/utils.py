@@ -34,9 +34,13 @@ invitation_token = InvitationTokenGenerator()
 def get_clarindb():
     hostname = settings.MONGO_DB_HOST
     port_number=settings.MONGO_DB_PORT
+    user=settings.MONGO_USERNAME
+    password=settings.MONGO_PASSWORD
+    db_name=settigs.MONGO_DATABASE
 
 
-    mongoclient = MongoClient(host=hostname, port=port_number)
+    mongoclient = MongoClient(host=hostname, port=port_number,username=user,password=password,
+    authSource=db_name,authMechanism='SCRAM-SHA-256')#?
     clarindb = mongoclient["clarin"]
     return clarindb, mongoclient
 
