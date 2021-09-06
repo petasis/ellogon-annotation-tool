@@ -36,7 +36,7 @@ def get_clarindb():
     port_number=settings.MONGO_DB_PORT
     user=settings.MONGO_USERNAME
     password=settings.MONGO_PASSWORD
-    db_name=settigs.MONGO_DATABASE
+    db_name=settings.MONGO_DATABASE
 
 
     mongoclient = MongoClient(host=hostname, port=port_number,username=user,password=password,
