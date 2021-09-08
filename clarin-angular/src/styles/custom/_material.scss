@@ -1,0 +1,22 @@
+/** Fix some Material component styles */
+
+@use '../../app/ng-matero/theme/style/variables';
+
+.mat-card {
+  margin-bottom: variables.$gutter;
+}
+
+.mat-accordion {
+  display: block;
+  margin-bottom: variables.$gutter;
+}
+
+.mat-list-base {
+  position: relative;
+}
+
+.form-field-full {
+  .mat-form-field {
+    width: 100%;
+  }
+}

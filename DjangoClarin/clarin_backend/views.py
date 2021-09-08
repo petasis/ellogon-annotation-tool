@@ -35,7 +35,8 @@ from bson.objectid import ObjectId
 from django.forms.models import model_to_dict
 import jwt
 from django.db.models import Q
-
+from django.contrib.auth.hashers import check_password
+from django.http import JsonResponse
 
 class ObtainTokenPairView(TokenObtainPairView):
     serializer_class = MyTokenObtainPairSerializer
@@ -108,6 +109,7 @@ class LogoutAndBlacklistRefreshTokenForUserView(APIView):
 
 
 # ?
+
 class ActivationView(View):
     permission_classes = (permissions.AllowAny,)
     authentication_classes = ()
@@ -130,9 +132,11 @@ class ChangePassword(APIView):
             email = request.user
             user = Users.objects.get(email=email)
             data = {"email": email, "password": request.data['old_password']}
-            r = requests.post(request.build_absolute_uri(reverse('auth_token_obtain')),
-                              data=data)
-            if (r.status_code == 200):
+            passstatus=check_password(data["password"],user.password)
+            print(passstatus)
+            #r = requests.post(request.build_absolute_uri(reverse('auth_token_obtain')),
+                              #data=data)
+            if (passstatus == True):
                 user.set_password(request.data["new_password"])
                 user.save()
                 return Response(data={"success": True, "message": "Your password was successfully updated"},
@@ -217,25 +221,34 @@ class ReturnStatistics(APIView):
         annotations_counter = 0
         collections_counter=0
         documents_counter=0
+        print(request.user)
         try:
             owner = Users.objects.get(email=request.user)
             collections = Collections.objects.filter(owner_id=owner)
             documents = Documents.objects.filter(owner_id=owner)
             annotation_col = get_collection_handle(db_handle, "annotations")
+            #print(annotation_col)
             annotations= annotation_col.find({"owner_id":owner.pk})
+            #for item in annotations:
+             #   print(item)
+           # print(annotations)
             annotations_counter = annotations.count(True)
+           # print(annotations_counter)
             # for document in documents:
             #     annotations=annotation_col.find({"document_id":document.pk})
             #     for annotation in annotations:
             #             annotations_counter = annotations_counter + 1
             collections_counter = collections.count()
             documents_counter = documents.count()
+           
+           
         except Exception as ex:
-            return Response(data={"success": True, "collections": collections_counter, "documents": documents_counter,
-                                  "annotations": annotations_counter},
+            print(ex)
+            return Response(data={"success": False,"data":{ "collections": collections_counter, "documents": documents_counter,
+                                  "annotations": annotations_counter}},
                             status=status.HTTP_200_OK)
-        return Response(data={"success": True, "collections": collections_counter, "documents": documents_counter,
-                              "annotations": annotations_counter},
+        return Response(data={"success": True, "data":{"collections": collections_counter, "documents": documents_counter,
+                              "annotations": annotations_counter}},
                         status=status.HTTP_200_OK)
 
 
@@ -263,6 +276,7 @@ class HandleCollection(APIView):
     def patch(self, request, collection_id):   #delete shared with me collection??
         try:
             collection = Collections.objects.filter(id=collection_id)
+            #print(collection)
             if not collection.exists():
                 #print("HandleCollection (delete): Wrong collection id")
                 return Response(data={"success": False,"exists":False,"flash":"An error occured"}, status=status.HTTP_400_BAD_REQUEST)
@@ -271,19 +285,24 @@ class HandleCollection(APIView):
             print("HandleCollection (delete):" + str(ex))
             return Response(data={"success": False,"exists":False,"flash":"An error occured"}, status=status.HTTP_400_BAD_REQUEST)
         try:
-            collection_queryset=Collections.objects.filter(name=request.data["name"])
+            user=Users.objects.get(email=request.user)
+            print(request.data["data"])
+            print(request.data["data"]["name"])
+            collection_queryset=Collections.objects.filter(name=request.data["data"]["name"],owner_id=user)
+            
+            print(collection_queryset)
             if(collection_queryset.exists()):
                 return Response(data={"success": True, "exists": True,
                                       "flash": "The name you selected already exists. Please select a new name"},
                                 status=status.HTTP_200_OK)
 
-
-            serializer=CollectionsSerializer(collection.get(),data={"name":request.data["name"]},partial=True)
+        
+            serializer=CollectionsSerializer(collection.get(),data={"name":request.data["data"]["name"]},partial=True)
             if serializer.is_valid():
                 project = serializer.save()
                 return Response(data={"success": True,"exists":False}, status=status.HTTP_200_OK)
         except Exception as ex:
-            print("HandleCollection (delete):" + str(ex))
+            print("HandleCollection (delete1):" + str(ex))
             return Response(data={"success": True,"exists":True,"flash":"An error occured"}, status=status.HTTP_200_OK)
 
 
@@ -312,9 +331,13 @@ class HandleCollections(APIView):
             collection_data["encoding"] = collection.encoding
             collection_data["owner_id"] = (collection.owner_id).pk
             confirmed = None
+           
             sc = myshared_collections.filter(collection_id=collection)
             if (sc.exists()):
-                confirmed = (sc.get()).confirmed
+                confirmed=0
+                for scitem in sc:
+                    if (scitem.confirmed==1):
+                        confirmed=1
             else:
                 confirmed=None
 
@@ -347,7 +370,7 @@ class HandleCollections(APIView):
     def post(self, request):  # overwrite???
         new_data = {}
         try:
-            data = request.data
+            data = request.data["data"]
             owner = Users.objects.get(email=request.user)
         except Exception as ex:
             print("HandleCollections (POST):" + str(ex))
@@ -415,15 +438,22 @@ class HandleDocuments(APIView):
 
     def get(self, request, collection_id):
         try:
-            documents = Documents.objects.get(id=collection_id)
+            collection=Collections.objects.get(pk=collection_id)
+            documents = Documents.objects.filter(collection_id=collection)
+            docs=[]
+            for item in documents:
+               docs.append({"owner_email":(item.owner_id).email,"id":item.id,"type":item.type,"name":item.name,"text":item.text,"data_text":item.data_text,
+               "data_binary":None,"handler":item.handler,"visualisation_options":item.visualisation_options,"metadata":item.metadata,"external_name":item.external_name,
+               "encoding":item.encoding,"version":item.version,"owner_id":(item.owner_id).pk,"collection_id":(item.collection_id).pk,"updated_by":item.updated_by,"created_at":item.created_at,
+               "updated_at":item.updated_at})
         except Exception as ex:
             return Response(data={"HandleDocuments :" + str(ex)}, status=status.HTTP_404_NOT_FOUND)
-        return Response(data={"success": True, "data": documents}, status=status.HTTP_200_OK)
+        return Response(data={"success": True, "data": docs}, status=status.HTTP_200_OK)
 
     def post(self, request,collection_id):
         new_data = {}
         try:
-            data = request.data
+            data = request.data["data"]
             print(data)
             owner = Users.objects.get(email=request.user)
             new_data["name"] = data["name"]
@@ -461,9 +491,10 @@ class HandleDocuments(APIView):
             if (new_data["type"] == "tei xml"):
                 if ("visualisation_options" in data):
                     new_data["visualisation_options"]=data["visualisation_options"]
+
                 else:
-                    handler = HandlerClass(new_data["text"],  new_data["type"])
-                    new_data["visualisation_options"]=handler.apply()
+                    handler = HandlerClass(new_data["text"], "tei")
+                    new_data["visualisation_options"]=str(handler.apply())
             new_data["collection_id"] = collection_id
 
             new_data["encoding"] = data["encoding"]
@@ -502,7 +533,7 @@ class HandleDocuments(APIView):
             print("HandleDocuments (POST):" + str(ex))
             return Response(data={"success": False}, status=status.HTTP_400_BAD_REQUEST)
 
-
+        #print(new_data["visualisation_options"])
         serializer = DocumentsSerializer(data=new_data)
         if serializer.is_valid():
             instancedoc=serializer.save()
@@ -1053,6 +1084,12 @@ class ImportAnnotationsView(APIView):
 
 
 class ExportCollectionView(APIView):
+    permission_classes = (permissions.AllowAny,)
+    authentication_classes = () # replace href reference in manage-collections.component.html with
+    # a  request function method
+
+
+
     def get(self, request, collection_id):
         data = {}
         try:
@@ -1070,7 +1107,7 @@ class ExportCollectionView(APIView):
             for document in documents:
                 for attr, value in document.__dict__.items():
                     if not attr == "_state":
-                        print(attr)
+                        #print(attr)
                         if (attr=="owner_id_id"):
                             attr="owner_id"
                         if(attr=="collection_id_id"):
@@ -1087,9 +1124,9 @@ class ExportCollectionView(APIView):
                 doc_record = {}
             data["documents"] = doc_records
         except Exception as e:
-            return Response(data={"success": True, "message": "An error occured." + str(e)},
+            return JsonResponse(data={"success": True, "message": "An error occured." + str(e)},
                             status=status.HTTP_200_OK)
-        return Response(data={"success": True, "message": "ok", "data": data},
+        return JsonResponse(data={"success": True, "message": "ok", "data": data},
                         status=status.HTTP_200_OK)
 
 
@@ -1138,7 +1175,8 @@ def transformdate(datetime_str):
 
 
 class MainView(APIView):
-
+    permission_classes = (permissions.AllowAny,)
+    authentication_classes = ()
 
 
 
@@ -1146,103 +1184,83 @@ class MainView(APIView):
 
 
     def get(self, request):
+      
+       
+        #  df = pd.read_csv('./clarin_backend/data/users.csv')
+         # file="users" 
+          #if(file=="users"):
+           # for index, row in df.iterrows():
+            #     print(row)
+             #    user=Users(pk=row["id"],username=row["email"],email=row["email"],first_name=row["email"],last_name=None,permissions=None,last_login=str2date(row["last_login"]),created_at=str2date(row["created_at"]),
+              #   updated_at= str2date(row["updated_at"]))
+               #  user.set_password("12345678")
+                # user.save()
 
-        return Response(data={"hello": "world"}, status=status.HTTP_200_OK)
-       #  cwd = os.getcwd()
-       #  print(cwd)
-       #  df = pd.read_csv('./clarin_backend/data/coreference_annotators.csv')
-       #  file="coreference_annotators"
-       #  if(file=="users"):
-       #      for index, row in df.iterrows():
-       #          print(row)
-       #
-       #
-       #          # print(str2date(row["last_login"]))
-       #          # print(str2date(row["created_at"]))
-       #
-       #          #print(type(row["id"]))
-       #          user=Users(pk=row["id"],username=row["email"],email=row["email"],first_name=row["email"],last_name=None,permissions=None,last_login=str2date(row["last_login"]),created_at=str2date(row["created_at"]),
-       #          updated_at= str2date(row["updated_at"]))
-       #          user.set_password("12345678")
-       #          # print(user.created_at)
-       #          # print(user.username)
-       #          user.save()
-       #  if (file == "collections"):
-       #      for index, row in df.iterrows():
-       #          print(row)
-       #          user=Users.objects.get(pk=row["owner_id"])
-       #          collection=Collections(pk=row["id"],name=row["name"],owner_id=user,encoding=row["encoding"],handler=row["handler"],created_at=str2date(row["created_at"]),
-       #          updated_at= str2date(row["updated_at"]))
-       #          collection.save()
-       #  if (file == "documents"):
-       #              for index, row in df.iterrows():
-       #                  user = Users.objects.get(pk=row["owner_id"])
-       #                  collection=Collections.objects.get(pk=row["collection_id"])
-       #                  if(row["type"]!="tei xml" and row["type"]!="tei xml"):
-       #                      typeval=None
-       #                      visualisation_options=None
-       #                      handler=None
-       #                      data_text=None
-       #                  else:
-       #                      typeval=row["type"]
-       #                      visualisation_options = row["visualisation_options"]
-       #                      handler = row["handler"]
-       #                      data_text=row["data_text"]
-       #
-       #
-       #
-       #                  document=Documents(pk=row["id"],name=row["name"],text=row["text"],data_binary=None,version=row["version"],encoding=row["encoding"],updated_by=row["updated_by"],
-       #                                     external_name=row["external_name"],metadata=None,created_at=str2date(row["created_at"]),owner_id=user,collection_id=collection,handler=handler,
-       #          updated_at= str2date(row["updated_at"]),type=typeval,visualisation_options=visualisation_options,data_text=data_text
-       #
-       #                                     )
-       #
-       #
-       #                  document.save()
-       #                  #print(row)
-       #
-       #  if (file == "shared_collections"):
-       #
-       #      for index, row in df.iterrows():
-       #          print(row)
-       #          fuser = Users.objects.get(email=row["from"])
-       #          tuser=Users.objects.get(email=row["to"])
-       #          collection = Collections.objects.get(pk=row["collection_id"])
-       #
-       #          shared_collection=SharedCollections(pk=row["id"],collection_id=collection,fromfield=fuser,tofield=tuser,confirmation_code=row["confirmation_code"],
-       #                                              confirmed=row["confirmed"],created_at=str2date(row["created_at"]),
-       #          updated_at= str2date(row["updated_at"]))
-       #          shared_collection.save()
-       #  if (file == "open_documents"):
-       #              for index, row in df.iterrows():
-       #                 # print(row)
-       #                  collection = Collections.objects.get(pk=row["collection_id"])
-       #                  document = Documents.objects.get(pk=row["document_id"])
-       #                  open_document=OpenDocuments(user_id=row["user_id"],collection_id=collection,document_id=document,annotator_type=row["annotator_type"],db_interactions=row["db_interactions"],created_at=str2date(row["created_at"]),
-       #          updated_at= str2date(row["updated_at"]))
-       #                  open_document.save()
-       #  if(file=="button_annotators"):
-       #      for index, row in df.iterrows():
-       #
-       #          # if(t=="nan"):
-       #          #     print("yyy")
-       #          #print(type(t))
-       #          user = Users.objects.get(pk=row["user_id"])
-       #          button_annotator=ButtonAnnotators(user_id=user,language=row["language"],annotation_type=row["annotation_type"],attribute=row["attribute"],alternative=row["alternative"],
-       #                                            created_at=str2date(row["created_at"]),
-       #                                            updated_at=str2date(row["updated_at"])
-       #                                            )
-       #          button_annotator.save()
-       #  if (file == "coreference_annotators"):
-       #              for index, row in df.iterrows():
-       #                  user = Users.objects.get(pk=row["user_id"])
-       #                  coreference_annotator = CoreferenceAnnotators(user_id=user, language=row["language"],
-       #                                                       annotation_type=row["annotation_type"],
-       #                                                       alternative=row["alternative"],
-       #                                                       created_at=str2date(row["created_at"]),
-       #                                                       updated_at=str2date(row["updated_at"])
-       #                                                       )
-       #                  coreference_annotator.save()
+         # df = pd.read_csv('./clarin_backend/data/collections.csv')
+          #file="collections"
+        #  if (file == "collections"):
+            # for index, row in df.iterrows():
+             #    print(row)
+              #   user=Users.objects.get(pk=row["owner_id"])
+               #  collection=Collections(pk=row["id"],name=row["name"],owner_id=user,encoding=row["encoding"],handler=row["handler"],created_at=str2date(row["created_at"]),
+                ##collection.save()
+         # df = pd.read_csv('./clarin_backend/data/documents.csv')
+          #file="documents"     
+          #if (file == "documents"):
+          #           for index, row in df.iterrows():
+           #              user = Users.objects.get(pk=row["owner_id"])
+            #             collection=Collections.objects.get(pk=row["collection_id"])
+             #            if(row["type"]!="tei xml" and row["type"]!="tei xml"):
+              #               typeval=None
+               #              visualisation_options=None
+                #             handler="none"
+                 #            data_text=None
+                   #      else:
+                    #         typeval=row["type"]
+                     #        visualisation_options = row["visualisation_options"]
+                      #       handler = row["handler"]
+                       #      data_text=row["data_text"]
+                        # document=Documents(pk=row["id"],name=row["name"],text=row["text"],data_binary=None,version=row["version"],encoding=row["encoding"],updated_by=row["updated_by"],external_name=row["external_name"],metadata=None,created_at=str2date(row["created_at"]),owner_id=user,collection_id=collection,handler=handler,updated_at= str2date(row["updated_at"]),type=typeval,visualisation_options=visualisation_options,data_text=data_text)
+                         #document.save()
+        
+         # df = pd.read_csv('./clarin_backend/data/open_documents.csv')
+          #file="open_documents"  
+          #if (file == "open_documents"):
+           #          for index, row in df.iterrows():
+            #             print(row)
+             #            collection = Collections.objects.get(pk=row["collection_id"])
+              #           document = Documents.objects.get(pk=row["document_id"])
+               #          user = Users.objects.get(pk=row["user_id"])
+                #         open_document=OpenDocuments(user_id=user,collection_id=collection,document_id=document,annotator_type=row["annotator_type"],db_interactions=row["db_interactions"],created_at=str2date(row["created_at"]),
+                 #        updated_at= str2date(row["updated_at"]))
+                  #       open_document.save()
+          #df = pd.read_csv('./clarin_backend/data/button_annotators.csv')
+          #file="button_annotators" 
+          #if(file=="button_annotators"):
+           #  for index, row in df.iterrows():
+       
+             #    user = Users.objects.get(pk=row["user_id"])
+              #   button_annotator=ButtonAnnotators(user_id=user,language=row["language"],annotation_type=row["annotation_type"],attribute=row["attribute"],alternative=row["alternative"],created_at=str2date(row["created_at"]),updated_at=str2date(row["updated_at"]))
+               #  button_annotator.save()
+          #df = pd.read_csv('./clarin_backend/data/coreference_annotators.csv')
+          #file="coreference_annotators" 
+          #if (file == "coreference_annotators"):
+           #          for index, row in df.iterrows():
+            #             user = Users.objects.get(pk=row["user_id"])
+             #            coreference_annotator = CoreferenceAnnotators(user_id=user, language=row["language"],annotation_type=row["annotation_type"],alternative=row["alternative"],created_at=str2date(row["created_at"]),updated_at=str2date(row["updated_at"]))
+              #           coreference_annotator.save()
+          #df = pd.read_csv('./clarin_backend/data/shared_collections.csv')
+          #file="shared_collections"
+          #if (file == "shared_collections"):
+           #  for index, row in df.iterrows():
+            #     print(row)
+             #    fuser = Users.objects.get(email=row["from"])
+              #   tuser=Users.objects.get(email=row["to"])
+               #  collection = Collections.objects.get(pk=row["collection_id"])
+                # shared_collection=SharedCollections(pk=row["id"],collection_id=collection,fromfield=fuser,tofield=tuser,confirmation_code=row["confirmation_code"],confirmed=row["confirmed"],created_at=str2date(row["created_at"]),
+                 #updated_at= str2date(row["updated_at"]))
+                 #shared_collection.save()
+          return Response(data={"hello": "world"}, status=status.HTTP_200_OK) 
        #
        #
        #                  #print(row)

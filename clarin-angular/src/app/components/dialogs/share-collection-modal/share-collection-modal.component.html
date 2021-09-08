@@ -1,0 +1,42 @@
+<div class="share-collection-modal">
+  <h1 mat-dialog-title>{{'Collections.Share Collection'|translate}}:
+    "{{data.collectionName}}"</h1>
+  <form [formGroup]="shareForm">
+    <mat-dialog-content>
+      <flash-messages></flash-messages>
+      <mat-form-field appearance="outline">
+        <mat-label>{{'Collections.Recipient\'s e-mail'|translate}}</mat-label>
+        <input matInput [(ngModel)]="sharingData.to" formControlName="email" email required>
+        <mat-error *ngIf="shareForm.controls.email.hasError('required')">
+          {{'validations.required'|translate}}
+        </mat-error>
+        <mat-error *ngIf="shareForm.controls.email.hasError('email')">
+          {{'Collections.Please enter a valid e-mail address'|translate}}
+        </mat-error>
+      </mat-form-field>
+      <div class="invitations">
+        <div *ngIf="invitations.length>0">
+          {{'Collections.Invitations have also been sent to'|translate}}:<br /><br />
+          <mat-list>
+            <mat-list-item *ngFor="let invitation of invitations">
+              {{invitation.to}}<div fxFlex></div>
+              <mat-chip-list>
+                <mat-chip *ngIf="invitation.confirmed==1">{{'Collections.Accepted'|translate}}</mat-chip>
+                <mat-chip *ngIf="invitation.confirmed!=1">{{'Collections.Pending'|translate}}</mat-chip>
+              </mat-chip-list>
+              <button mat-icon-button (click)="remove(invitation.collection_id, invitation.id)"
+                [matTooltip]="'Collections.Revoke Invitation'|translate">
+                <mat-icon>clear</mat-icon>
+              </button>
+            </mat-list-item>
+          </mat-list>
+        </div>
+      </div>
+    </mat-dialog-content>
+    <mat-dialog-actions align="end">
+      <button type="submit" mat-button color="primary" [disabled]="shareForm.invalid"
+        (click)="share()">{{'Collections.Send Invitation'|translate}}</button>
+      <button type="button" mat-button mat-dialog-close (click)="cancel()">{{'Collections.Close'|translate}}</button>
+    </mat-dialog-actions>
+  </form>
+</div>

@@ -1,0 +1,177 @@
+/************************************************/
+.CodeMirror {
+  font-family: Helvetica,Arial,sans-serif;
+  font-size: 1.1em;
+  line-height: 1.9em;
+  background-color: #FFF;
+}
+
+.CodeMirror-lines {
+  background-color: #FFF;
+}
+
+.annotated-text {
+  padding: 0.1em 0.35em;
+  margin: 0 0.1em;
+  line-height: 1;
+  border-radius: 0.25em;
+  border: 1px solid;
+}
+
+.annotated-text:after {
+  content: attr(data-type);
+  box-sizing: border-box;
+  font-size: 0.7em;
+  line-height: 1;
+  padding: 0.1em;
+  border-radius: 0.35em;
+  text-transform: uppercase;
+  display: inline-block;
+  vertical-align: middle;
+  margin: 0 0 0.2rem 0.5rem;
+}
+
+/************************************************/
+
+/*** button annotator widget ***/
+.button-widget-wrapper {
+  margin: 0 8px;
+  padding-bottom: 13px;
+}
+.button-widget-wrapper table {
+  table-layout: fixed;
+  border-collapse: separate;
+  margin-bottom: 0px;
+  border-spacing: 0;
+}
+
+.sidebar-main-content .btn-sm i {
+  font-size: 18px;
+}
+.sidebar-main-content .coref-span-start,
+.sidebar-main-content .coref-span-end,
+.sidebar-main-content .annotation-entry,
+.sidebar-main-content .coref-entry,
+.sidebar-main-content .coref-segment-entry,
+.sidebar-main-content input[type="text"],
+.sidebar-main-content select {
+  height: 24px;
+  resize: none;
+  font-size: 12px !important;
+  padding: 2px !important;
+}
+.sidebar-main-content .coref-multi-entry {
+  resize: none;
+  font-size: 12px !important;
+  padding: 3px 5px 2px !important;
+  margin: 2px 0;
+  white-space: pre-wrap;
+  overflow-y: auto !important;
+}
+
+.button-widget-wrapper table button {
+  /*height: 24px!important;*/
+  padding: 1px 0px;
+  margin: 1px 0 !important;
+  font-size: 12px !important;
+}
+.button-widget-wrapper table td {
+  white-space: nowrap;
+  border-top: none !important;
+  border-bottom: none !important;
+  padding: 0px 2px !important;
+}
+.button-widget-header {
+  font-family: "Open Sans", sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+  color: #d34332;
+  padding: 4px 0 3px;
+}
+.button-widget-subheader {
+  /* white-space:nowrap;
+     overflow: hidden;
+     text-overflow: ellipsis;*/
+  padding: 6px 0;
+
+  white-space: pre-wrap; /* CSS3 */
+  white-space: -moz-pre-wrap; /* Firefox */
+  white-space: -pre-wrap; /* Opera <7 */
+  white-space: -o-pre-wrap; /* Opera 7 */
+  word-wrap: break-word; /* IE */
+}
+.button-widget-paragraph-label {
+  font-family: "Open Sans", sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+  color: #d34332;
+  padding: 4px 0 3px;
+}
+
+.annotation-btn {
+  //text-align: left;
+  white-space: pre !important;
+  display: inline-block;
+  overflow: hidden;
+  height: 100% !important;
+  width: 100%;
+  position: relative;
+  text-overflow: ellipsis;
+}
+.annotation-btn-span {
+  @extend .annotation-btn;
+  text-align: left;
+  float: left;
+  &::before {
+    color: var(--color-bg);
+    background: var(--color-bg);
+    // content: "\258C";
+    content: "";
+    margin: 0 2px 0 2px;
+    display: inline-block;
+    width: 4px;
+    height: 16px;
+    vertical-align: middle;
+  }
+}
+
+/* Bootstrap 4.x does not have a btn-default any more. Extend primary... */
+.btn-default {
+  //@extend .btn-outline-primary;
+  color: #333;
+  background-color: #fff;
+  border-color: #ccc;
+
+  &:hover {
+    color: #333;
+    background-color: #e6e6e6;
+    border-color: #adadad;
+  }
+}
+/*** end of button annotator widget ***/
+
+/* TEI XML tags */
+.CodeMirror-line .stage, .tei-stage {
+  font-style: italic;
+}
+
+.CodeMirror-line .speaker, .tei-speaker {
+  line-height: 2.6;
+  font-weight: bold;
+}
+
+.CodeMirror-line .noteindex, .tei-noteindex {
+  font-size: .83em;
+  vertical-align: super;
+}
+
+.CodeMirror-line .quote::before, .tei-quote::before {
+    content: open-quote;
+}
+.CodeMirror-line .quote::after, .tei-quote::after {
+    content: close-quote;
+}
+
+.CodeMirror-line .emph, .tei-emph {
+  font-style: italic;
+}

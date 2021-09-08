@@ -18,5 +18,5 @@ from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('clarin/', include('clarin_backend.urls')) #change clarin to /?
+    path('', include('clarin_backend.urls')) #change clarin to /?
 ]

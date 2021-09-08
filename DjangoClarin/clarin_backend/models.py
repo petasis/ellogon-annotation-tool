@@ -66,8 +66,8 @@ class OpenDocuments(models.Model):
     updated_at = models.DateTimeField("updated_at", default=datetime.now)
     db_interactions = models.IntegerField("db_interactions")
     annotator_type = models.CharField("annotator_type", max_length=255)
-    user_id = models.IntegerField(primary_key=True)
-    #user_id = models.ForeignKey(Users, on_delete=models.CASCADE)
+    #user_id = models.IntegerField(primary_key=True)
+    user_id = models.ForeignKey(Users, on_delete=models.CASCADE)
     #user_id = models.
     collection_id = models.ForeignKey(Collections, on_delete=models.CASCADE)
     document_id = models.ForeignKey(Documents, on_delete=models.CASCADE)

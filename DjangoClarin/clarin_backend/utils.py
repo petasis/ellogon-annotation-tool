@@ -37,15 +37,34 @@ def get_clarindb():
     user=settings.MONGO_USERNAME
     password=settings.MONGO_PASSWORD
     db_name=settings.MONGO_DATABASE
+    clarindb=None
+    mongoclient=None
+    try:
+       # print(hostname)
+        #print(port_number)
+        #print(user)
+        #print(password)
+        #print(db_name)
+        mongo_con="mongodb://"+user+":"+password+"@"+hostname+":"+str(port_number)
+       # print(mongo_con)
+        #print("mongodb://clarinel:CeimUgyediaskibwawEijWir@localhost:27017")
+        mongoclient = MongoClient(mongo_con)
+        clarindb = mongoclient["clarin"]
+        #mongoclient = MongoClient(host=hostname, port=port_number,username=user,password=password,
+      #  authSource=db_name)#?
+        mongoclient.server_info()
+    except Exception as ex:
+            print(ex)
 
 
-    mongoclient = MongoClient(host=hostname, port=port_number,username=user,password=password,
-    authSource=db_name,authMechanism='SCRAM-SHA-256')#?
-    clarindb = mongoclient["clarin"]
+    #print(mongoclient
+   # clarindb = mongoclient["clarin"]
+    #print(clarindb)
     return clarindb, mongoclient
 
 
 def get_collection_handle(db_handle, collection_name):
+    print(db_handle[collection_name])
     return db_handle[collection_name]
 
 
