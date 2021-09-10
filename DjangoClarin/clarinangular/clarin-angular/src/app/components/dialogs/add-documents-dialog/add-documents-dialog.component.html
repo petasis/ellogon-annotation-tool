@@ -1,0 +1,16 @@
+<div class="add-collection-documents-modal">
+  <h1 mat-dialog-title>{{'Collections.'+data.dialogTitle|translate}}:
+    "{{data.data.collectionName}}"</h1>
+  <mat-dialog-content>
+    <flash-messages></flash-messages>
+    {{data.message}}
+    <!--<uploader (handleFileInputs)="handleFileInput($event)"></uploader>-->
+    <add-collection [showPageHeader]="false" [showMyCollections]="false" [creatingNewCollection]="false"
+      [editingCollectionData]="data.data" [showSubmitButton]="false" [showNameField]="false" [showHeader]="false"
+      (filesChange)="updateUserFiles($event)"></add-collection>
+  </mat-dialog-content>
+  <mat-dialog-actions align="end">
+    <button mat-button mat-dialog-close (click)="cancel()">{{'Cancel'|translate}}</button>
+    <button mat-button [disabled]="!userFiles.length" (click)="add()">{{'Add'|translate}}</button>
+  </mat-dialog-actions>
+</div>

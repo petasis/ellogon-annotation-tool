@@ -3,7 +3,7 @@ from pathlib import Path
 from email.mime.image import MIMEImage
 from django.template import Context
 from django.template.loader import render_to_string, get_template
-from django.core.mail import EmailMessage, EmailMultiAlternatives
+from django.core.mail import EmailMessage, EmailMultiAlternatives, send_mail
 
 from django.utils.encoding import force_bytes, force_text, DjangoUnicodeDecodeError
 from django.contrib.sites.shortcuts import get_current_site
@@ -27,10 +27,17 @@ class EmailAlert():
                                      from_email=self.sender, to=self.recipient)
         if html:
             msg.attach_alternative(html, "text/html")
-        try:
-            msg.send(fail_silently=False)
-        except Exception as e:
-            print(e)
+            #msg.content_subtype = 'html'  
+            #msg.mixed_subtype = 'related' 
+            #with open(EmailAlert.image_path, mode='rb') as f:
+            #            image = MIMEImage(f.read())
+            #            msg.attach(image)
+            #            image.add_header('Content-ID', f"<{self.image_name}>")
+            try:
+                  msg.send(fail_silently=False)
+            except Exception as e:
+               print("EX:")
+               print(e)
 
 
     def send_activation_email(self):

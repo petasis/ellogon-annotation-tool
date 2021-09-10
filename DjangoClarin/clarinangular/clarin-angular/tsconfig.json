@@ -1,0 +1,42 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "baseUrl": "./",
+    "outDir": "./dist/out-tsc",
+    "sourceMap": true,
+    "declaration": false,
+    "downlevelIteration": true,
+    "experimentalDecorators": true,
+    "module": "esnext",
+    "moduleResolution": "node",
+    "importHelpers": true,
+    "target": "es2015",
+    "lib": [
+      "es2018",
+      "dom",
+      "ESNext.String"
+    ],
+    "paths": {
+      "@components": ["src/app/components"],
+      "@components/*": ["src/app/components/*"],
+      "@core": ["src/app/ng-matero/core"],
+      "@core/*": ["src/app/ng-matero/core/*"],
+      "@shared": ["src/app/ng-matero/shared"],
+      "@shared/*": ["src/app/ng-matero/shared/*"],
+      "@theme": ["src/app/ng-matero/theme"],
+      "@theme/*": ["src/app/ng-matero/theme/*"],
+      "@testing": ["testing"],
+      "@testing/*": ["testing/*"],
+      "@env": ["src/environments"],
+      "@env/*": ["src/environments/*"]
+    },
+    "allowSyntheticDefaultImports":true,
+    "emitDecoratorMetadata": true
+  },
+  "angularCompilerOptions": {
+    "fullTemplateTypeCheck": true,
+    "strictInjectionParameters": true,
+    "annotationsAs": "decorators",
+    "compilationMode": "full"
+  }
+}

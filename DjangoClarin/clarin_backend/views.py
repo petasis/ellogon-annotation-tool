@@ -4,7 +4,7 @@ from datetime import datetime
 import requests
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
-
+from django.template import loader
 # Create your views here.
 from django.template.loader import get_template
 from django.views import View
@@ -79,7 +79,8 @@ class CustomUserCreate(APIView):
 
                                "email": request.data['email'],
                                "baseurl": request.build_absolute_uri("/")[:-1],
-                               "ellogon_logo": request.build_absolute_uri('/static/images/EllogonLogo.svg')}  # path?
+                               "ellogon_logo": "https://vast.ellogon.org/images/logo.jpg"}
+                             #  "ellogon_logo": request.build_absolute_uri('/static/images/EllogonLogo.svg')}  # path?
                     activation_alert = EmailAlert(request.data['email'], (user.first_name+" "+user.last_name), content)
                     activation_alert.send_activation_email()
                     json = {"success": True, "message": "You were successfully registered"}
@@ -117,12 +118,17 @@ class ActivationView(View):
     def get(self, request, uidb64, token):
         id = force_text(urlsafe_base64_decode(uidb64))
         user = Users.objects.get(pk=id)
+        message={"message":"Your account activated successfully"}
+        #print(user.is_active)
         if ((not account_activation_token.check_token(user, token)) or user.is_active):
-            print(user.is_active)
-            return HttpResponse('<h1>Your account has been already activated</h1>')  # return correct page?
+            message={"message":"Your account has been already activated"}
+           # return HttpResponse('<h1>Your account has been already activated</h1>')  # return correct page?
         user.is_active = True
         user.save()
-        return HttpResponse('<h1>Your account activated successfully</h1>')  # return correct page?
+        template = loader.get_template('activateview.html')
+    
+        return HttpResponse(template.render(message, request))
+        #return HttpResponse('<h1>Your account activated successfully</h1>')  # return correct page?
 
 
 class ChangePassword(APIView):
