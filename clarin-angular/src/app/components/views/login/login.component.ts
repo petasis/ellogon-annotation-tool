@@ -23,6 +23,7 @@ export class LoginComponent implements OnInit {
       password: ['', [Validators.required]],
       remember_me: [false],
     });
+   // this.flashMessage.show("Authentication failed", { cssClass: 'alert alert-warning', timeout: 10000 });
   }
 
   get username() {
@@ -38,6 +39,7 @@ export class LoginComponent implements OnInit {
   }
 
   login() {
+    console.log("Login Component loaded")
     // console.error("LoginComponent: login(): username:", this.username.value,
     //               ", remember:", this.rememberMe.value);
     // This service is in src/ng-matero/core/authentication/auth.service.ts (@core)
@@ -46,10 +48,16 @@ export class LoginComponent implements OnInit {
       .pipe(filter(authenticated => authenticated))
       .subscribe(
         () => {
+         this.flashMessage.show("Authentication failed", { cssClass: 'alert alert-warning', timeout: 10000 });
+         if(this.auth.check()==false){
+           
+          //this.flashMessage.show("Authentication failed", { cssClass: 'alert alert-warning', timeout: 10000 });
+         }
           this.router.navigateByUrl('/app');
         },
         (error: HttpErrorResponse) => {
           if (error.status === 422) {
+            console.log(this.auth.check())
             const form = this.loginForm;
             const errors = error.error.errors;
             Object.keys(errors).forEach(key => {
@@ -58,7 +66,10 @@ export class LoginComponent implements OnInit {
               });
             });
           } else if (error.status != 200) {
-            this.flashMessage.show(error.error.message, { cssClass: 'alert alert-warning', timeout: 10000 });
+            
+           console.log(this.flashMessage)
+            this.flashMessage.show("Authentication failed", { cssClass: 'alert alert-warning', timeout: 10000 });
+            //this.flashMessage.show(error.error.message, { cssClass: 'alert alert-warning', timeout: 10000 });
           }
         }
       );

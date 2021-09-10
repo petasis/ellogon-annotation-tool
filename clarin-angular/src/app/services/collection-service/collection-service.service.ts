@@ -28,7 +28,14 @@ export class CollectionService {
 
   getData() {
     return new Promise((resolve, reject) => {
-      this.http.get('./api/collections_data')
+      let tokenstr=localStorage.getItem("TOKEN")
+      let tokenjson=JSON.parse(tokenstr)
+      let access_token=tokenjson["token"]["access"]
+      let headers=new HttpHeaders({'Authorization': 'JWT ' +access_token})
+
+
+
+      this.http.get('./api/collections_data',{"headers":headers})
         .subscribe((response) => {
           if (response["success"] && response["data"].length > 0) {
             // initialize the documents tree

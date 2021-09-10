@@ -255,6 +255,7 @@ export class AnnotationComponent extends MainComponent implements OnInit {
         //search if the user has an open document 
         if (response.success && response.data.length > 0) {
           // The following variable (documentFound) contains the documents opened by the current user.
+          
           var documentFound = response.data.find(doc => doc.opened === 1);
           console.warn("AnnotationComponent: detectOpenDocument(): Document Found:", documentFound);
 

@@ -35,7 +35,7 @@ export class ProfileSettingsComponent implements OnInit {
  // matcher = new MyErrorStateMatcher();
 
   constructor(public userService: UserService,
-    public flashMessage: FlashMessagesService,private fb: FormBuilder) {
+    private flashMessage: FlashMessagesService,private fb: FormBuilder) {
     
 
 
@@ -96,7 +96,8 @@ export class ProfileSettingsComponent implements OnInit {
 
 
   ngOnInit() {
-    
+    console.log(this.flashMessage)
+    this.flashMessage.show("<div>Error</div>", { cssClass: 'alert alert-warning', timeout: 10000 });
    // this.handleClick()
   }
 
@@ -123,10 +124,10 @@ export class ProfileSettingsComponent implements OnInit {
 
       this.flashMessage.show(response.message, { cssClass: 'alert alert-warning', timeout: 2000 });
 
-    }, (error) => {
-      console.log(error.message)
-      this.flashMessage.show(error.message, { cssClass: 'alert alert-warning', timeout: 2000 });
-    });
+      }, (error) => {
+        this.flashMessage.show(error.message, { cssClass: 'alert alert-warning', timeout: 2000 });
+      });
+
 };   
 
 

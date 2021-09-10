@@ -361,7 +361,9 @@ export class TextWidgetComponent extends BaseControlComponent
    * Bring the text and the annotations when a document changes
    */
   updateCurrentDocument() {
+    console.log("Open")
     var newDocument: any = this.TextWidgetAPI.getCurrentDocument();
+    console.log(newDocument)
     this.AnnotatorTypeId = newDocument.annotator_id;
     // console.error("updateCurrentDocument: newDoc:", newDocument,
     //               "annotator:", this.AnnotatorTypeId);
@@ -390,17 +392,31 @@ export class TextWidgetComponent extends BaseControlComponent
                   "Error during the restore of your document. Please refresh the page and try again.")
               })
             } else {
+              console.log("TextData1")
+              console.log(response)
               this.spinnerVisible = true;
               this.TextWidgetAPI.resetData();
               this.editor.setValue("");
               this.editor.clearHistory();
-              var options = JSON.parse(response.data.visualisation_options);
+              var options
+              try {
+                options = JSON.parse(response.data.visualisation_options);//error in tei xml
+            } catch(e) {
+                options=null
+            }
+
+
+             
               if (options !== null && "gutter" in options) {
                 this.skipLineNumber = options["gutter"];
 
               } else {
                 this.skipLineNumber = {};
               }
+              console.log("TextData2")
+              console.log(response)
+              console.log(response.data.text)
+             // this.editor.setValue("OK")
               this.editor.setValue(response.data.text);
 
               this.graph.clear();

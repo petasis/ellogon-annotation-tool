@@ -9,8 +9,16 @@ export class OpenDocumentService {
   constructor(public http: HttpClient) { }
 
   getAll() {
+    let tokenstr=localStorage.getItem("TOKEN")
+    let tokenjson=JSON.parse(tokenstr)
+    let access_token=tokenjson["token"]["access"]
+    let headers=new HttpHeaders({'Authorization': 'JWT ' +access_token})
+
+
+
+
     return new Promise((resolve, reject) => {
-      this.http.get('./api/open_documents')
+      this.http.get('./api/open_documents',{ 'headers': headers })
         .subscribe((data) => {
           resolve(data);
         }, (error) => {
@@ -20,8 +28,13 @@ export class OpenDocumentService {
   }; /* getAll */
 
   get(documentId, annotatorId) {
+    let tokenstr=localStorage.getItem("TOKEN")
+    let tokenjson=JSON.parse(tokenstr)
+    let access_token=tokenjson["token"]["access"]
+    let headers=new HttpHeaders({'Authorization': 'JWT ' +access_token})
+
     return new Promise((resolve, reject) => {
-      this.http.get('./api/open_documents/' + documentId + '/' + annotatorId)
+      this.http.get('./api/open_documents/' + documentId + '/' + annotatorId,{"headers":headers})
         .subscribe((data) => {
           resolve(data);
         }, (error) => {
@@ -31,10 +44,14 @@ export class OpenDocumentService {
   }; /* get */
 
   save(documentData) {
+    let tokenstr=localStorage.getItem("TOKEN")
+    let tokenjson=JSON.parse(tokenstr)
+    let access_token=tokenjson["token"]["access"]
+    
     return new Promise((resolve, reject) => {
       this.http.post('./api/open_documents', { data: documentData }, {
         headers: new HttpHeaders({
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json','Authorization': 'JWT ' +access_token
         })
       }).subscribe((data) => {
         resolve(data);
@@ -46,8 +63,14 @@ export class OpenDocumentService {
   }; /* save */
 
   destroy(documentId, annotatorId) {
+    let tokenstr=localStorage.getItem("TOKEN")
+    let tokenjson=JSON.parse(tokenstr)
+    let access_token=tokenjson["token"]["access"]
+    let headers=new HttpHeaders({'Authorization': 'JWT ' +access_token})
+
+    console.log("destroyeros")
     return new Promise((resolve, reject) => {
-      this.http.delete('./api/open_documents/' + documentId + '/' + annotatorId)
+      this.http.delete('./api/open_documents/' + documentId + '/' + annotatorId,{"headers":headers})
         .subscribe((data) => {
           resolve(data);
         }, (error) => {

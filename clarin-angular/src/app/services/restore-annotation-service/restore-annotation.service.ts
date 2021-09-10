@@ -179,11 +179,12 @@ export class RestoreAnnotationService {
 
   discard(collectionId, documentId, annotatorId) {
     return new Promise((resolve, reject) => {
-
+      console.log("123")
       this.tempAnnotationService.destroy(collectionId, documentId, annotatorId /*null*/) //delete the old annotations of the document*/
         .then((response: any) => {
-          if (response.success)
-            return this.openDocumentService.destroy(documentId, annotatorId);
+          if (response.success){
+             console.log("1234")
+            return this.openDocumentService.destroy(documentId, annotatorId);}
           else
             return reject(response);
         }).then((response: any) => { //delete the temp annotations

@@ -46,8 +46,13 @@ export class DocumentService {
 
 
   get(collectionId, documentId) {
+    let tokenstr=localStorage.getItem("TOKEN")
+    let tokenjson=JSON.parse(tokenstr)
+    let access_token=tokenjson["token"]["access"]
+    let headers=new HttpHeaders({'Authorization': 'JWT ' +access_token})
     return new Promise((resolve, reject) => {
-      this.http.get('./api/collections/' + collectionId + '/documents/' + documentId)
+
+      this.http.get('./api/collections/' + collectionId + '/documents/' + documentId,{"headers":headers})
         .subscribe(function (data) {
           resolve(data);
         }, error => {

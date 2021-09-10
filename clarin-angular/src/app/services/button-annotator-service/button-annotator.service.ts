@@ -10,11 +10,21 @@ export class ButtonAnnotatorService {
   constructor(public http: HttpClient) { }
 
   checkForSavedSchema() {
+    let tokenstr=localStorage.getItem("TOKEN")
+    let tokenjson=JSON.parse(tokenstr)
+    let access_token=tokenjson["token"]["access"]
+    //let headers=new HttpHeaders({'Authorization': 'JWT ' +access_token})
+
+
+
+
+
+
     return new Promise((resolve, reject) => {
       this.http.get('./api/button_annotators', {
         headers: new HttpHeaders({
           'Content-Type': 'application/json; charset=utf-8',
-          'Accept': 'application/json; charset=utf-8'
+          'Accept': 'application/json; charset=utf-8','Authorization': 'JWT ' +access_token
         })
       }).subscribe((data) => {   // Asynchronous Service calling
         resolve(data);
@@ -26,10 +36,13 @@ export class ButtonAnnotatorService {
   };
 
   updateSchema(annotationSchema) {
+    let tokenstr=localStorage.getItem("TOKEN")
+    let tokenjson=JSON.parse(tokenstr)
+    let access_token=tokenjson["token"]["access"]
     return new Promise((resolve, reject) => {
       this.http.post('./api/button_annotators', { data: annotationSchema }, {
         headers: new HttpHeaders({
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json','Authorization': 'JWT ' +access_token
         })
       }).subscribe((data) => {
         resolve(data);

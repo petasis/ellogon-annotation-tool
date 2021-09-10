@@ -58,7 +58,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework', # add rest_framework
     'rest_framework_simplejwt.token_blacklist',
-    'clarin_backend'
+    'clarin_backend',
+   
 ]
 
 MIDDLEWARE = [

@@ -176,7 +176,7 @@ class OpenDocumentsSerializer(serializers.ModelSerializer):
     updated_at = serializers.DateTimeField(default=datetime.now)
     db_interactions = serializers.IntegerField()
     annotator_type = serializers.CharField(max_length=255)
-    user_id = serializers.IntegerField(required=True)
+    user_id = serializers.PrimaryKeyRelatedField(read_only=False, queryset=Users.objects.all())
     collection_id = serializers.PrimaryKeyRelatedField(read_only=False, queryset=Collections.objects.all())
     document_id = serializers.PrimaryKeyRelatedField(read_only=False, queryset=Documents.objects.all())
 

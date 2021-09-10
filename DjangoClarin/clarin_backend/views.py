@@ -97,7 +97,7 @@ class LogoutAndBlacklistRefreshTokenForUserView(APIView):
     authentication_classes = ()
 
     def post(self, request):
-        print(request.data)
+        #print(request.data)
         try:
 
             refresh_token = request.data["refresh_token"]
@@ -564,9 +564,13 @@ class HandleDocument(APIView):
         try:
             #doc_record={}
             document = Documents.objects.get(id=document_id)
+            colletion=Collections.objects.get(id=collection_id)
             doc_record=model_to_dict(document)
-
-
+            doc_record["opened"]=False
+            user=Users.objects.get(email=request.user)
+           # opendocuments=OpenDocuments.objects.filter(document_id=document,collection_id=colletion,user_id=user)
+           # if (opendocuments.exists()):
+            #    doc_record["opened"]=True
 
         except Exception as ex:
             return Response(data={"HandleDocument :" + str(ex)}, status=status.HTTP_404_NOT_FOUND)
@@ -686,8 +690,10 @@ class OpenDocumentView(APIView):
             records=[]
             for opendocument in opendocuments:
                 collection=Collections.objects.get(pk=(opendocument.collection_id).pk)
-                if(opendocument.user_id==user.pk):
+                
+                if((opendocument.user_id).pk==user.pk):
                     opened=1
+                    print("ok")
                 else:
                     opened=0
                 shared_collection_queryset=(SharedCollections.objects.filter(collection_id=collection))
@@ -716,12 +722,12 @@ class OpenDocumentView(APIView):
 
     def post(self, request):
         try:
-            data = request.data
+            data = request.data["data"]
             collection = Collections.objects.get(pk=data["collection_id"])
             document = Documents.objects.get(pk=data["document_id"])
             user = Users.objects.get(email=request.user)
             opendocument = OpenDocuments.objects.filter(user_id=user.pk, collection_id=collection, document_id=document)
-            data = {"annotator_type": request.data["annotator_type"], "user_id": user.pk,
+            data = {"annotator_type": data["annotator_type"], "user_id": user.pk,
                     "collection_id": collection.pk, "document_id": document.pk, "db_interactions": 0,
                     "updated_at": datetime.now()}
             if (not (opendocument.exists())):
@@ -731,9 +737,10 @@ class OpenDocumentView(APIView):
             else:
                  serializer = OpenDocumentsSerializer(opendocument.get(),data=data,partial=True)
 
-            return Response(data={"success": True})
+            return Response(data={"success": True ,"data":{"annotator_type": data["annotator_type"],"collection_id": collection.pk, "document_id": document.pk}})
 
         except Exception as e:
+            print(e)
             return Response(data={"success": False, "message": "An error occured."},
                             status=status.HTTP_200_OK)
 
@@ -746,10 +753,14 @@ class CollectionDataView(APIView):
             shared_collections = SharedCollections.objects.filter(fromfield=user)
             doc_records = []
             confirmed = None
+         
             for collection in collections:
                 myshared_collection = shared_collections.filter(collection_id=collection)
                 if (myshared_collection.exists()):
-                    confirmed = (myshared_collection.get()).confirmed
+                         confirmed=0
+                         for scitem in myshared_collection:
+                                if (scitem.confirmed==1):
+                                        confirmed=1
                 documents = Documents.objects.filter(collection_id=collection, owner_id=user)
                 for document in documents:
                     doc_records.append({"id": document.pk, "name": document.name, "collection_id": collection.pk,
@@ -757,7 +768,9 @@ class CollectionDataView(APIView):
                                         "owner_id": (document.owner_id).pk,
                                         "confirmed": confirmed, "is_owner": 1})
                 confirmed = None
+             
             shared_collections = SharedCollections.objects.filter(tofield=user, confirmed=1)
+           
             #print(shared_collections)
             for shared_collection in shared_collections:
                 collection = Collections.objects.get(pk=(shared_collection.collection_id).pk)
@@ -769,8 +782,9 @@ class CollectionDataView(APIView):
                                         "owner_id": (document.owner_id).pk,
                                         "confirmed": 1, "is_owner": 0})
         except Exception as e:
+            print("ssss")
             print(e)
-            return Response(data={"success": False, "message": "An error occured."},
+            return Response(data={"success": False, "message": "An error occured here."},
                             status=status.HTTP_200_OK)
         return Response(data={"success": True, "data": doc_records}, status=status.HTTP_200_OK)
         # sharedcollections=SharedCollections.objects.filter()
@@ -793,8 +807,8 @@ class ButtonAnnotatorView(APIView):
         try:
             user = Users.objects.get(email=request.user)
             button_annotator = ButtonAnnotators.objects.filter(user_id=user)
-            data = {"language": request.data["language"], "annotation_type": request.data["annotation_type"],
-                    "attribute": request.data["attribute"], "alternative": request.data["alternative"],
+            data = {"language": request.data["data"]["language"], "annotation_type": request.data["data"]["annotation_type"],
+                    "attribute": request.data["data"]["attribute"], "alternative": request.data["data"]["alternative"],
                     "updated_at": datetime.now()}
             if (not (button_annotator.exists())):
                 data["user_id"] = user.pk
@@ -809,6 +823,7 @@ class ButtonAnnotatorView(APIView):
             return Response(data={"success": True})
 
         except Exception as e:
+            print(e)
             return Response(data={"success": False, "message": "An error occured."},
                             status=status.HTTP_200_OK)
 
@@ -882,14 +897,20 @@ class HandleTempAnnotationView(APIView):
         try:
             annotations_temp = get_collection_handle(db_handle, "annotations_temp")
             annotations = get_collection_handle(db_handle, "annotations")
-            annotations_temp.delete_one({"_id": param})
-            r = annotations.find({"_id": param})
-            if r.count() > 0:
-                for r1 in r:
-                    annotations.delete_one(r1)
+            ty="id"
+            if "_" in param:
+                ty="type"
+            if ty=="id":
+                annotations_temp.delete_one({"_id": param})
+                r = annotations.find({"_id": param})
+                if r.count() > 0:
+                    for r1 in r:
+                        annotations.delete_one(r1)
+            else:
+                annotations_temp.delete_many({"annotator_id": param})
+                
             user = Users.objects.get(email=request.user)
-            opendocument = (
-                OpenDocuments.objects.filter(collection_id=collection, document_id=document, user_id=user.pk)).get()
+            opendocument = (OpenDocuments.objects.filter(collection_id=collection, document_id=document, user_id=user.pk))[0]
             opendocument.db_interactions = opendocument.db_interactions + 1
             opendocument.save()
         except Exception as e:
@@ -942,7 +963,7 @@ class OpenDocumentUpdate(APIView):
             try:
                 user = Users.objects.get(email=request.user)
                 document=Documents.objects.get(pk=document_id)
-                opendocument_queryset=OpenDocuments.objects.filter(user_id=user.pk,document_id=document)
+                opendocument_queryset=OpenDocuments.objects.filter(user_id=user,document_id=document)
                 opendocument=opendocument_queryset.get()
                 collection_id=(opendocument.collection_id).pk
                 shared_collections=SharedCollections.objects.filter(collection_id=(opendocument.collection_id).pk)
@@ -975,6 +996,23 @@ class OpenDocumentUpdate(APIView):
                                 status=status.HTTP_200_OK)
             return Response(data={"success": True, "data": data},
                             status=status.HTTP_200_OK)
+    def delete(self,request,document_id,Button_Annotator_name):
+        try:
+                user = Users.objects.get(email=request.user)
+                document=Documents.objects.get(pk=document_id)
+                opendocument_queryset=OpenDocuments.objects.filter(user_id=user,document_id=document,annotator_type=Button_Annotator_name)
+                opendocument=opendocument_queryset.get()
+                opendocument.delete()
+                return Response(data={"success": True,"message":"open document deleted"}, status=status.HTTP_200_OK)
+        except Exception as e:
+                print(e)
+                return Response(data={"success": False, "message":"An error occured"},
+                                status=status.HTTP_200_OK)
+               
+        
+
+
+
 
     # annotations_temp.delete_one
 

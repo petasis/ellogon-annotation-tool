@@ -112,7 +112,6 @@ export class UserService {
     // Ensure we have a valid CSRF token...
     this.refreshCSRFToken();
     console.log("update_password1")
-
     //var deferred = $q.defer();
     //var sanCredentials = sanitizeObj(credentials);
     let tokenstr=localStorage.getItem("TOKEN")
@@ -126,7 +125,6 @@ export class UserService {
         }, (error) => {
           reject(error);
         });
-
     });
   };
 
