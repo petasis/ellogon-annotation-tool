@@ -10,7 +10,7 @@ from django.utils.encoding import force_bytes, force_text
 from .utils import account_activation_token
 from django.urls import reverse
 
-
+from django.middleware.csrf import get_token
 
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
@@ -22,12 +22,17 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
         return token
 
     def validate(self, attrs):
+        message="Authentication failed:"
         #print(self.context['request'].build_absolute_uri("/")[:-1])
         request=self.context['request']
-        print("a")
+        cstf_token_val=get_token(request)
+        self.context['request'].META["X-XSRF-TOKEN"]=cstf_token_val
+       # print(self.context['request'].META)
+        print(type(self.context["request"]))
         try:
             data = super().validate(attrs)
         except Exception as e:
+            message=message+str(e)
             print(attrs)
             userr=Users.objects.filter(email=attrs["email"])
             if (userr.exists()):
@@ -42,13 +47,22 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
                     # base_url="https://www.ellogon.org/"
                      base_url = request.build_absolute_uri("/")[:-1]
                      activation_link = request.build_absolute_uri(link)
-                     ellogon_path=request.build_absolute_uri('/static/images/EllogonLogo.svg')
-
-                     content = {"user":  (user.first_name+" "+user.last_name), "link": activation_link,"email": attrs['email'],
+                     #ellogon_path=request.build_absolute_uri('/static/images/EllogonLogo.svg')
+                     ellogon_path="https://vast.ellogon.org/images/logo.jpg"
+                    
+                     if (user.first_name!=None and user.last_name!=None):
+                                user_ref = user.first_name + " " + user.last_name
+                     else:
+                                user_ref=user.email
+                     content = {"user":  user_ref, "link": activation_link,"email": attrs['email'],
                                 "baseurl": base_url,
                                  "ellogon_logo": ellogon_path}  # path?
-                     activation_alert = EmailAlert(attrs['email'], (user.first_name+" "+user.last_name), content)
-                     activation_alert.send_activation_email()
+                     try:
+                                activation_alert = EmailAlert(attrs['email'], user_ref, content)
+                                activation_alert.send_activation_email()
+                     except Exception as e:
+                         return {"success": False,"message": "An error occured. email has not been sent"}
+
 
 
 
@@ -61,7 +75,7 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
 
 
 
-            return {"success":False,"message":"Authentication failed!"}
+            return {"success":False,"message":message}
 
 
         refresh = self.get_token(self.user)

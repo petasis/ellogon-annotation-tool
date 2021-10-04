@@ -1,15 +1,15 @@
-django~=3.1.7
+django
 django-environ
 django-filter
-djangorestframework~=3.12.2
+djangorestframework
 djangorestframework-simplejwt
 django-webpack-loader
 markdown
 mysqlclient
-requests~=2.25.1
-simplejwt~=2.0.1
-six~=1.15.0
+requests
+simplejwt
+six
 
-beautifulsoup4~=4.9.3
+beautifulsoup4
 dataclass_json
 pymongo

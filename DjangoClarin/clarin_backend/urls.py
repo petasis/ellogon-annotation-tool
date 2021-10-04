@@ -1,26 +1,29 @@
 import simplejwt as simplejwt
 from django.urls import path
 from rest_framework_simplejwt import views as jwt_views
-from .views import ResetPassword, ChangePassword, ManageProfileView, ShareCollectionView, SharedCollectionDelete, \
+from .views import GetCsrfToken, OpenDocumentRetrieve, ResetPassword, ChangePassword, ManageProfileView, ShareCollectionView, SharedCollectionDelete, \
     AcceptCollectionView, OpenDocumentView, CollectionDataView, ButtonAnnotatorView, CoreferenceAnnotatorView, \
     SaveTempAnnotationView, OpenDocumentUpdate, HandleTempAnnotationView, DocumenAnnotationView, DeleteSavedAnnotations, \
     ExportCollectionView, ReturnStatistics, HandleCollection, HandleCollections, HandleDocuments, HandleDocument, \
-    InitPasswords, Me, ExistCollection, ImportAnnotationsView
+    InitPasswords, Me, ExistCollection, ImportAnnotationsView,OpenDocumentRetrieve
 from .views import ObtainTokenPairView, \
         CustomUserCreate, \
         MainView, \
         LogoutAndBlacklistRefreshTokenForUserView, \
-        ActivationView
+        ActivationView,InitApp,HandlerApply
 
-
+from django.contrib.staticfiles.views import serve
 
 urlpatterns = [
+    path('', InitApp.as_view(), name='login_auth'),
+    path('api/auth/gettoken',GetCsrfToken.as_view(),name='csrf_token_get'),
+    path('auth/login',InitApp.as_view(),name='login_auth'),
     path('api/auth/register',                   CustomUserCreate.as_view(),             name="auth_register"),
 
     path('auth/activate/<uidb64>/<token>', ActivationView.as_view(),               name='user_activate'),
     path('api/auth/login',                    ObtainTokenPairView.as_view(),                    name="auth_login"),
     path('user/profile_manage',           ManageProfileView.as_view(),            name='user_profile'),
-    path('auth/reset',                    ResetPassword.as_view(),                name='auth_reset'),
+    path('api/auth/reset',                    ResetPassword.as_view(),                name='auth_reset'),
     path('api/user/update',                ChangePassword.as_view(),               name='api_user_update'),
     path('api/user/logout',                   LogoutAndBlacklistRefreshTokenForUserView.as_view(), name='auth_logout'),
     path('auth/token/obtain',             ObtainTokenPairView.as_view(),          name='auth_token_obtain'),
@@ -136,7 +139,7 @@ urlpatterns = [
 
 
 path('api/collections/<collection_id>/documents/<document_id>',HandleDocument.as_view(), name='current_document'),
-
+path('api/fileoperation/handler/apply/',HandlerApply.as_view(),name='apply_tei_handler'),
 #10)share project-sender
     #post
 #input:{"data":{"cname":"Lorem_ipsum","cid":38,"to":"antogramatzis@outlook.com"}}
@@ -278,7 +281,7 @@ path('api/collections/<collection_id>/documents/<document_id>/temp_annotations/<
 # opened	1
 #<button_annotator_name>->Button_Annotator_<language>_<annotation_type>_<attribute>_<alternative>
 path('api/open_documents/<document_id>/<Button_Annotator_name>', OpenDocumentUpdate.as_view(), name='save_annotations1'),
-
+path('api/open_documents/<document_id>', OpenDocumentRetrieve.as_view(), name='open_document_retrieve'),
 
 
 #DELETE

@@ -7,6 +7,7 @@ import { AddDocumentsDialogComponent } from '../../dialogs/add-documents-dialog/
 import { ConfirmDialogComponent } from '../../dialogs/confirm-dialog/confirm-dialog.component';
 import { ErrorDialogComponent } from '../../dialogs/error-dialog/error-dialog.component';
 import { ImportModalComponent } from '../../dialogs/import-modal/import-modal.component';
+import { ImportDocumentsFromExportModalComponent } from '../../dialogs/import-documents-from-export-modal/import-documents-from-export-modal.component';
 import { RenameCollectionModalComponent } from '../../dialogs/rename-collection-modal/rename-collection-modal.component';
 import { ShareCollectionModalComponent } from '../../dialogs/share-collection-modal/share-collection-modal.component';
 import { MainComponent } from '../main/main.component';
@@ -50,8 +51,8 @@ export class ManageCollectionsComponent extends MainComponent implements OnInit 
   dialogHeight: "600px";
 
   /* Selection model for selecting collection documents (for deletion) */
-  documentsDisplayedColumns: string[] = ['select', 'id', 'name',
-    'owner', 'updated_at', 'updated_by'];
+  documentsDisplayedColumns: string[] = ['select', 'id', 'name'/*,
+    'owner', 'updated_at', 'updated_by'*/];
   documentsSelection;
   documentsDataSource =
     new MatTableDataSource<DocumentInformation>(this.collectionDocuments);
@@ -243,6 +244,16 @@ export class ManageCollectionsComponent extends MainComponent implements OnInit 
     });
   };
 
+  importDocumentsFromExport() {
+    var dialogRef = this.dialog.open(ImportDocumentsFromExportModalComponent,
+      { width: this.dialogWidth,
+        data: {collection: this.selectedCollection, documents: this.selectedDocuments}});
+    dialogRef.afterClosed().subscribe(modalResult => {
+      this.initializeCollections();
+      this.initializeCollectionData();
+    });
+  }; /* importDocumentsFromExport */
+
   //function to be called when a user clicks on table documents
   documentClick(s) {
     // console.error("click():", s, this.documentsSelection.selected);
@@ -256,15 +267,75 @@ export class ManageCollectionsComponent extends MainComponent implements OnInit 
 
   setCollectionDocuments(docs) {
     this.collectionDocuments = docs;
+    var promises = [];
+
     // Add position
-    this.collectionDocuments.forEach(function (element, index) {
+    this.collectionDocuments.forEach((element, index) => {
+      delete element.text;
+      delete element.data_binary;
       element.position = index;
+      delete element.data_text;
+      delete element.metadata;
+      delete element.visualisation_options;
+      element.annotations_len = 0;
+      element.annotations_attributes_len = 0;
+      element.annotations_settings_len = 0;
+      element.annotations_total_len = 0;
+      element.annotations_temp_len = 0;
+      element.annotations_temp_attributes_len = 0;
+      element.annotations_temp_settings_len = 0;
+      element.annotations_temp_total_len = 0;
+      // Collect information about annotations...
+      promises.push(this.annotationService.getAll(element.collection_id, element.id)
+        .then((response) => {
+          element.annotations_total_len = response['data'].length;
+          element.annotations_settings_len =
+            response['data'].filter(ann => this.TextWidgetAPI.isSettingAnnotation(ann)).length;
+          element.annotations_attributes_len =
+            response['data'].filter(ann => this.TextWidgetAPI.isAttributeAnnotation(ann)).length;
+          element.annotations_len = element.annotations_total_len -
+            element.annotations_attributes_len - element.annotations_settings_len;
+        }));
+      // Collect information about temporary annotations...
+      promises.push(this.tempAnnotationService.getAll(element.collection_id, element.id)
+        .then((response) => {
+          element.annotations_temp_total_len = response['data'].length;
+          element.annotations_temp_settings_len =
+            response['data'].filter(ann => this.TextWidgetAPI.isSettingAnnotation(ann)).length;
+          element.annotations_temp_attributes_len =
+            response['data'].filter(ann => this.TextWidgetAPI.isAttributeAnnotation(ann)).length;
+          element.annotations_temp_len = element.annotations_temp_total_len -
+            element.annotations_temp_attributes_len - element.annotations_temp_settings_len;
+        }));
+      // Get information about users that have opened the document...
+      element.opened_by = [];
+      promises.push(this.openDocumentService.get(element.id, null).then((response: any) => {
+        if (response.success && response.data.length > 0) {
+          response.data.forEach((opendoc) => {
+            element.opened_by.push({
+              email: opendoc.email,
+              first_name: opendoc.first_name,
+              last_name: opendoc.last_name,
+              owner: opendoc.opened,
+              annotator: opendoc.annotator_type,
+              db_interactions: opendoc.db_interactions
+            });
+          });
+        }
+      }, (error) => {
+        this.dialog.open(ErrorDialogComponent, {
+          data: new ConfirmDialogData("Error", "Database error. Please refresh the page and try again.")
+        });
+      }));
     });
-    this.documentsDataSource = new MatTableDataSource<DocumentInformation>(this.collectionDocuments);
-    this.documentsSelectionClear();
-    if (this.documentsTable !== undefined) {
-      this.documentsTable.renderRows();
-    }
+    Promise.all(promises)
+    .then((data) => {
+      this.documentsDataSource = new MatTableDataSource<DocumentInformation>(this.collectionDocuments);
+      this.documentsSelectionClear();
+      if (this.documentsTable !== undefined) {
+        this.documentsTable.renderRows();
+      }
+    });
   }; /* setCollectionDocuments */
 
   documentsSelectionClear() {
@@ -297,5 +368,34 @@ export class ManageCollectionsComponent extends MainComponent implements OnInit 
     }
     return `${this.documentsSelection.isSelected(row) ? 'deselect' : 'select'} row ${row.position + 1}`;
   }
+
+  /** Close an open document */
+  closeDocument(document, open) {
+    var modalOptions = new ConfirmDialogData();
+    modalOptions.headerType = "warning";
+    modalOptions.dialogTitle = this.translate.instant('Warning');
+    modalOptions.message = this.translate.instant('Collections.This action is going to close this Document. Do you want to proceed?', { name: document.name });
+    modalOptions.buttons = ['No', 'Yes'];
+
+    var dialogRef = this.dialog.open(ConfirmDialogComponent, { data: modalOptions, width: this.dialogWidth });
+
+    dialogRef.afterClosed().subscribe(modalResult => {
+      if (modalResult === "Yes") {
+        this.openDocumentService.destroy(document.id, open.annotator)
+          .then((data) => {
+            this.selectedCollection = undefined;
+            this.setCollectionDocuments([]);
+            this.initializeCollections();
+            this.showStaticHeader = true;
+            this.selectedCollectionIndex = null;
+          }, (error) => {
+            this.dialog.open(ConfirmDialogComponent, {
+              data: new ConfirmDialogData(this.translate.instant("Error"),
+                this.translate.instant("Collections.Error in closing Document.")), width: this.dialogWidth
+            });
+          });
+      }
+    });
+  }; /* closeDocument */
 
 }
