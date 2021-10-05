@@ -43,7 +43,7 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 from django.middleware.csrf import get_token
 from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken, OutstandingToken
 from bson.objectid import ObjectId
-
+import json 
 @method_decorator(ensure_csrf_cookie, name='dispatch')
 class ObtainTokenPairView(TokenObtainPairView):
     serializer_class = MyTokenObtainPairSerializer
@@ -527,7 +527,7 @@ class HandleDocuments(APIView):
             docs=[]
             for item in documents:
                docs.append({"owner_email":(item.owner_id).email,"id":item.id,"type":item.type,"name":item.name,"text":item.text,"data_text":item.data_text,
-               "data_binary":None,"handler":item.handler,"visualisation_options":item.visualisation_options,"metadata":item.metadata,"external_name":item.external_name,
+               "data_binary":None,"handler":item.handler,"visualisation_options": item.visualisation_options,"metadata":item.metadata,"external_name":item.external_name,
                "encoding":item.encoding,"version":item.version,"owner_id":(item.owner_id).pk,"collection_id":(item.collection_id).pk,"updated_by":item.updated_by,"created_at":item.created_at,
                "updated_at":item.updated_at})
         except Exception as ex:
@@ -577,8 +577,15 @@ class HandleDocuments(APIView):
                     new_data["visualisation_options"]=data["visualisation_options"]
 
                 else:
+                    new_data["data_text"]= data["text"]
                     handler = HandlerClass(new_data["text"], "tei")
-                    new_data["visualisation_options"]=str(handler.apply())
+                    vo_json=handler.apply()["documents"][0]
+                    new_data["text"] =vo_json["text"]
+                    #print("Tei Document")
+                    #print(vo_json.keys())
+                    new_data["visualisation_options"]=json.dumps(vo_json["info"])
+          
+           # print(new_data["visualisation_options"])        
             new_data["collection_id"] = collection_id
 
             new_data["encoding"] = data["encoding"]
@@ -657,6 +664,8 @@ class HandleDocument(APIView):
 
             user=Users.objects.get(email=request.user)
             opendocument_length=OpenDocuments.objects.filter(document_id=document,collection_id=colletion).count()
+            print("opc")
+            print(opendocument_length)
             if (opendocument_length>0):
                 doc_record["is_opened"]=True
 
@@ -1026,6 +1035,11 @@ class SaveTempAnnotationView(APIView):
             for item in getquery:
                 item["_id"]=str(item["_id"])
                 records.append(item)
+            if (len(records)==0):
+                 stored_annotations = get_collection_handle(db_handle, "annotations")
+                 getquery = stored_annotations.find(getfilter)
+                 for item in getquery:
+                        annotations.insert_one(item)
         except Exception as e:
             print(e)
             return Response(data={"success": True, "data": records},
