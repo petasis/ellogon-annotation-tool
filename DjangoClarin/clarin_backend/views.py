@@ -1,6 +1,7 @@
 import os
 from datetime import datetime
 from re import I
+from time import time
 from django.utils.decorators import method_decorator
 
 from django.http import HttpResponse
@@ -543,7 +544,8 @@ class HandleDocuments(APIView):
             new_data["name"] = data["name"]
             new_data["external_name"] = data["external_name"]
             new_data["type"] = None
-            if ("type" in data):
+            if ("type" in data and data["type"] is not None):
+                
                 new_data["type"] = data["type"].lower()
             new_data["metadata"]=None
             if ("metadata" in data):
@@ -610,9 +612,9 @@ class HandleDocuments(APIView):
 
             if( "updated_by" in data):
                 u=Users.objects.get(email=data["updated_by"])
-                new_data["updated_by"] = u.pk
+                new_data["updated_by"] = u.email
             else:
-                new_data["updated_by"] = owner.pk
+                new_data["updated_by"] = owner.email
 
             #annotation args?
 
@@ -1040,6 +1042,7 @@ class SaveTempAnnotationView(APIView):
                  getquery = stored_annotations.find(getfilter)
                  for item in getquery:
                         annotations.insert_one(item)
+                        records.append(item)
         except Exception as e:
             print(e)
             return Response(data={"success": True, "data": records},
@@ -1062,24 +1065,22 @@ class SaveTempAnnotationView(APIView):
             return Response(data={"success": False, "message": "An error occured." + str(e)}, status=status.HTTP_200_OK)
 
         annotations_temp = get_collection_handle(db_handle, "annotations_temp")
-        print(request.data["data"])
-        if type(request.data["data"]) == list:
-            c=0
-          
+
+        if type(request.data["data"]) == list: #giati?
             for item in request.data["data"]:
                     getquery = annotations_temp.find({"_id":item["_id"]})
-           # print(getquery.count())
                     if(getquery.count()==0):
                         item["_id"]= ObjectId(item["_id"])
                         annotations_temp.insert_one(item)
-                
-
-            #annotations_temp.insert_many(request.data["data"])
             opendocument = (OpenDocuments.objects.filter(collection_id=collection, document_id=document, user_id=user.pk)).get()
             opendocument.db_interactions = opendocument.db_interactions + len(request.data["data"])
+
         if type(request.data["data"]) == dict:
             data=request.data["data"]
             data["_id"]=ObjectId(data["_id"])
+            data["updated_by"]=user.email
+            data["created_at"]=datetime.now()
+            data["updated_at"]=datetime.now()
             annotations_temp.insert_one(data)
             opendocument = (OpenDocuments.objects.filter(collection_id=collection, document_id=document, user_id=user.pk)).get()
             opendocument.db_interactions = opendocument.db_interactions + 1
@@ -1121,8 +1122,8 @@ class HandleTempAnnotationView(APIView):
                   #      annotations.delete_one(r1)
             else:
                 #delete temp annotations?
-                print("ok")
-                #annotations_temp.delete_many({"collection_id": cid, "document_id": did,"annotator_id": param})
+               # print("ok")
+                annotations_temp.delete_many({"collection_id": cid, "document_id": did,"annotator_id": param})
 
             opendocument = (OpenDocuments.objects.filter(collection_id=collection, document_id=document))
             for od in opendocument:
@@ -1147,10 +1148,20 @@ class HandleTempAnnotationView(APIView):
         try:
             annotations_temp = get_collection_handle(db_handle, "annotations_temp")
             filter = {"_id": ObjectId(param)}
+            ann=annotations_temp.find_one(filter)
             data=request.data["data"]
 
-            print(data)
+           # print(data)
             data["_id"]=ObjectId(data["_id"])
+            data["updated_by"]=user.email
+            data["updated_at"]=datetime.now()
+            #date_time_str = '2018-06-29 08:15:27.243860'
+           # date_time_obj = datetime.datetime.strptime(date_time_str, '%Y-%m-%dΤ%H:%M:%S.%f+00:00')
+            #  d  data["updated_at"]  data["updated_at"] 2021-07-26T13:20:53.564+00:00
+            print("created")
+            print(ann["created_at"])
+            data["created_at"]=ann["created_at"]
+            #print(data["created_at"])
             newvalues = {"$set": data}
             annotations_temp.update_one(filter, newvalues)
             opendocument = (
@@ -1175,7 +1186,15 @@ class HandleTempAnnotationView(APIView):
             for item in getquery:
                 item['_id']=str(item['_id'])
                 records.append(item)
-            print(records)
+           # print(records)
+            if (len(records)==0):
+                 stored_annotations = get_collection_handle(db_handle, "annotations")
+                 getquery = stored_annotations.find(getfilter)
+                 for item in getquery:
+                        annotations_temp.insert_one(item)
+                        item['_id']=str(item['_id'])
+                        records.append(item)
+
         except Exception as e:
             return Response(data={"success": False, "message": "An error occured." + str(e)},
                             status=status.HTTP_200_OK)
@@ -1358,15 +1377,31 @@ class DocumenAnnotationView(APIView):
         #     return Response(data={"success": False, "message": "An error occured." + str(e)}, status=status.HTTP_200_OK)
         try:
            # annotations_temp = get_collection_handle(db_handle, "annotations_temp")
+            print("save")
             annotations = get_collection_handle(db_handle, "annotations")
             data = request.data["data"]
             for item in data:
+                #print(1)
                 record = annotations.find({"_id": item["_id"]})
                 #for temp_annotation in record:
                  #   record2 = annotations.find({"_id": temp_annotation["_id"]})
+                #print(11) 
                 for annotation in record:
+                   #item["created_at"]=annotation["created_at"]
+                   #item["created_at"]=annotation["updated_at"]
                    annotations.delete_one(annotation)
+                #print(111) 
                 item["_id"]= ObjectId(item["_id"])
+               # print(1111) 
+               # if (item["attributes"]["type"]=="setting annotation"):
+                #   item["created_at"]= item["created_at"]+".000000"
+                 #  item["updated_at"]=item["update_at"]+".000000"
+                #print("created_at")
+                item["created_at"]=transformdate(item["created_at"])
+                #print(1111) 
+                print("updated_at")
+                item["updated_at"]=transformdate(item["updated_at"])
+                #print(11111) 
                 annotations.insert_one(item)
         except Exception as e:
             return Response(data={"success": False, "message": "An error occured." + str(e)},
@@ -1381,15 +1416,36 @@ class DocumenAnnotationView(APIView):
 class ImportAnnotationsView(APIView):
     def post(self,request,collection_id,document_id):
         annotations=request.data["data"]
+        print("import from export")
+        print(type(annotations))
         if (isinstance(annotations, list) == True):
-            if (len(annotations)>0):
+            if (len(annotations)>=0):
                 col_annotations = get_collection_handle(db_handle, "annotations")
                 exclude_keys = ['_id', 'collection_id', 'document_id']
                 for item in annotations:
                     new_item={k: item[k] for k in set(list(item.keys())) - set(exclude_keys)}
                     new_item['collection_id']=int(collection_id)
                     new_item["document_id"]=int(document_id)
+                    new_item['created_at']=transformdate(item["created_at"])
+                    new_item["updated_at"]=transformdate(item["updated_at"])
                     col_annotations.insert_one(new_item)
+                return Response(data={"success": True},status=status.HTTP_200_OK)
+        else:
+             if (isinstance(annotations, dict) == True):
+                print("dict")
+                col_annotations = get_collection_handle(db_handle, "annotations")
+                col_annotations_temp = get_collection_handle(db_handle, "annotations_temp")
+                exclude_keys = ['_id']
+                ann=annotations
+                new_ann={k: ann[k] for k in set(list(ann.keys())) - set(exclude_keys)}
+                #new_ann['collection_id']=int(collection_id)
+                #new_item["document_id"]=int(document_id)
+                new_ann['created_at']=transformdate(new_ann["created_at"])
+                new_ann["updated_at"]=transformdate(new_ann["updated_at"])
+                print(new_ann)
+                if (new_ann["type"]!="setting annotation"):
+                     col_annotations.insert_one(new_ann)
+                     col_annotations_temp.insert_one(new_ann)
                 return Response(data={"success": True},status=status.HTTP_200_OK)
                     #item["collection_id"]=collection_id
                     #item["document_id"]=document_id
@@ -1411,20 +1467,25 @@ class ExportCollectionView(APIView):
             # collection = model_to_dict(collection)
             for attr, value in collection.__dict__.items():
                 if not attr == "_state":
+                    if (attr=="owner_id_id"):
+                            attr="owner_id"
                     # print("Record1 is " + str(attr) + " = " + str(value))
                     data[attr] = value
             documents = Documents.objects.filter(collection_id=collection)
             doc_records = []
             doc_record = {}
             document_annotations = []
+            exclude_keys=["_state","owner_id_id","collection_id_id"]
             for document in documents:
+                
                 for attr, value in document.__dict__.items():
-                    if not attr == "_state":
+                    if not (attr in exclude_keys):
+                     
                         #print(attr)
-                        if (attr=="owner_id_id"):
-                            attr="owner_id"
-                        if(attr=="collection_id_id"):
-                            attr="collection_id"
+                     #   if (attr=="owner_id_id"):
+                      #      attr="owner_id"
+                       # if(attr=="collection_id_id"):
+                        #    attr="collection_id"
                         # print("Record2 is " + str(attr) + " = " + str(value))
                         doc_record[attr] = value
                 annotation_cur = annotations.find({"document_id": document.pk})
@@ -1457,6 +1518,9 @@ def str2date(strdate):
     return datetimeobj
 
 def transformdate(datetime_str):
+        if ("." not in datetime_str):
+            datetime_str=datetime_str+".000000"
+
         datetime_parts = datetime_str.split("T")
         # print(datetime_parts)
         date_segment = datetime_parts[0]
