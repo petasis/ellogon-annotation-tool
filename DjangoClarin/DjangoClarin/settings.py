@@ -219,3 +219,11 @@ MONGO_DB_PORT=int(env("MONGO_DB_PORT"))
 MONGO_USERNAME=env("MONGO_USERNAME")
 MONGO_PASSWORD=env("MONGO_PASSWORD")
 MONGO_DATABASE=env("MONGO_DATABASE")
+
+PASSWORD_HASHERS = [
+    'clarin_backend.clarin_hasher.ClarinBCryptSHA256PasswordHasher',
+    'django.contrib.auth.hashers.BCryptSHA256PasswordHasher',
+    'django.contrib.auth.hashers.PBKDF2PasswordHasher',
+    'django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher',
+    'django.contrib.auth.hashers.Argon2PasswordHasher',
+]
