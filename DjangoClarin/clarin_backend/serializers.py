@@ -210,8 +210,10 @@ class SharedCollectionsSerializer(serializers.ModelSerializer):
     #created_at = serializers.DateTimeField(default=datetime.now)
     updated_at = serializers.DateTimeField(default=datetime.now)
     collection_id = serializers.PrimaryKeyRelatedField(read_only=False, queryset=Collections.objects.all())
-    fromfield = serializers.PrimaryKeyRelatedField(read_only=False, queryset=Users.objects.all())
-    tofield = serializers.PrimaryKeyRelatedField(read_only=False, queryset=Users.objects.all())
+    fromfield= serializers.SlugRelatedField(many=True,read_only=False,slug_field='email',queryset=Users.objects.all())
+    tofield= serializers.SlugRelatedField(many=True,read_only=False,slug_field='email',queryset=Users.objects.all())
+    #fromfield = serializers.PrimaryKeyRelatedField(read_only=False, queryset=Users.objects.all())
+    #tofield = serializers.PrimaryKeyRelatedField(read_only=False, queryset=Users.objects.all())
 
     class Meta:
         model = SharedCollections

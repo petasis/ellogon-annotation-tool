@@ -11,11 +11,11 @@ class Users(AbstractUser):
     #username = models.CharField("name", max_length=255, unique=True, blank=False)
     email = models.EmailField('email', unique=True)
     permissions=models.TextField("permissions", null=True, default=None)
-    first_name = models.CharField("first_name", max_length=255, null=True, default=None,unique=True, blank=False)
+    first_name = models.CharField("first_name", max_length=255, null=True, default=None, blank=False)
     last_name = models.CharField("last_name", max_length=255, null=True, default=None)
     last_login = models.DateTimeField("last_login", null=True, default=None)
-    created_at = models.DateTimeField("created_at", default=datetime.now)
-    updated_at = models.DateTimeField("updated_at", default=datetime.now)
+    created_at = models.DateTimeField("created_at",default=datetime.today)
+    updated_at = models.DateTimeField("updated_at",default=datetime.today)
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
 
@@ -28,8 +28,8 @@ class Collections(models.Model):
     name = models.CharField("name", max_length=255)
     encoding = models.CharField("encoding", max_length=255)
     handler = models.CharField("handler", max_length=255)
-    created_at = models.DateTimeField("created_at", default=datetime.now)
-    updated_at = models.DateTimeField("updated_at", default=datetime.now)
+    created_at = models.DateTimeField("created_at",default=datetime.today)
+    updated_at = models.DateTimeField("updated_at", default=datetime.today)
     owner_id = models.ForeignKey(Users, on_delete=models.CASCADE)
 
     class Meta:
@@ -48,8 +48,8 @@ class Documents(models.Model):
     metadata = models.TextField("metadata", null=True, default=None)
     encoding = models.CharField("encoding", max_length=20)
     handler = models.CharField("handler", max_length=256, null=True, default=None)
-    created_at = models.DateTimeField("created_at", default=datetime.now)
-    updated_at = models.DateTimeField("updated_at", default=datetime.now)
+    created_at = models.DateTimeField("created_at", default=datetime.today)
+    updated_at = models.DateTimeField("updated_at", default=datetime.today)
     version = models.IntegerField("version", default=1)
     updated_by = models.CharField("updated_by", max_length=255)
     owner_id = models.ForeignKey(Users, on_delete=models.CASCADE)
@@ -62,8 +62,8 @@ class Documents(models.Model):
 
 class OpenDocuments(models.Model):
 
-    created_at = models.DateTimeField("created_at", default=datetime.now)
-    updated_at = models.DateTimeField("updated_at", default=datetime.now)
+    created_at = models.DateTimeField("created_at", default=datetime.today)
+    updated_at = models.DateTimeField("updated_at", default=datetime.today)
     db_interactions = models.IntegerField("db_interactions")
     annotator_type = models.CharField("annotator_type", max_length=255)
     #user_id = models.IntegerField(primary_key=True)
@@ -80,11 +80,11 @@ class OpenDocuments(models.Model):
 class SharedCollections(models.Model):
     confirmed = models.SmallIntegerField("confirmed",default=0)
     confirmation_code = models.CharField("confirmation_code", max_length=255,null=True, default=None)
-    created_at = models.DateTimeField("created_at", default=datetime.now)
-    updated_at = models.DateTimeField("updated_at", default=datetime.now)
+    created_at = models.DateTimeField("created_at", default=datetime.today)
+    updated_at = models.DateTimeField("updated_at", default=datetime.today)
     collection_id = models.ForeignKey(Collections, on_delete=models.CASCADE)
-    fromfield =  models.ForeignKey(Users, on_delete=models.CASCADE,null=True,related_name="fromfield")
-    tofield= models.ForeignKey(Users, on_delete=models.CASCADE,null=True,related_name="tofield")
+    fromfield =  models.ForeignKey(Users, on_delete=models.CASCADE,null=True,related_name="fromfield",to_field='email')
+    tofield= models.ForeignKey(Users, on_delete=models.CASCADE,null=True,related_name="tofield",to_field='email')
 
     class Meta:
         managed = True
@@ -113,8 +113,8 @@ class ButtonAnnotators(models.Model):
     annotation_type = models.CharField("annotation_type", max_length=255, null=True, default=None)
     attribute = models.CharField("attribute", max_length=255, null=True, default=None)
     alternative = models.CharField("alternative", max_length=255, null=True, default=None)
-    created_at = models.DateTimeField("created_at", default=datetime.now)
-    updated_at = models.DateTimeField("updated_at", default=datetime.now)
+    created_at = models.DateTimeField("created_at",  default=datetime.today)
+    updated_at = models.DateTimeField("updated_at",  default=datetime.today)
 
     class Meta:
         db_table = "button_annotators"
@@ -126,8 +126,8 @@ class CoreferenceAnnotators(models.Model):
     language = models.CharField("language", max_length=255, null=True, default=None)
     annotation_type = models.CharField("annotation_type", max_length=255, null=True, default=None)
     alternative = models.CharField("alternative", max_length=255, null=True, default=None)
-    created_at = models.DateTimeField("created_at", default=datetime.now)
-    updated_at = models.DateTimeField("updated_at", default=datetime.now)
+    created_at = models.DateTimeField("created_at",  default=datetime.today)
+    updated_at = models.DateTimeField("updated_at",  default=datetime.today)
 
     class Meta:
         db_table = "coreference_annotators"

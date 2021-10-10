@@ -2,6 +2,7 @@ import os
 from datetime import datetime
 from re import I
 from time import time
+from django.utils import encoding
 from django.utils.decorators import method_decorator
 
 from django.http import HttpResponse
@@ -65,6 +66,7 @@ class CustomUserCreate(APIView):
         # return Response(request.data, status=status.HTTP_201_CREATED)
         ## TODO: protect on error!
         print(request.data)
+
         data = {"email": request.data['email'], "first_name": request.data["first_name"],"last_name": request.data["last_name"],
                 "password": request.data["password"], "username": request.data["first_name"]+"_"+request.data["last_name"]}
         serializer = CustomUserSerializer(data=data)
@@ -746,8 +748,8 @@ class ShareCollectionView(APIView):
         print(link)
         confirmation_code = uidb64 + "/" + usidb64 + "/" + upidb64 + "/" + token
         data = {"confirmed": 0, "confirmation_code": confirmation_code, "collection_id": collection.pk,
-                "fromfield": fromuser.pk, "tofield": touser.pk}
-        #
+                "fromfield": fromuser.email, "tofield": touser.email}
+        #"fromfield": fromuser.pk, "tofield": touser.pk}
         serializer = SharedCollectionsSerializer(data=data)
         if serializer.is_valid():
             shared_collection = serializer.save()
@@ -1548,7 +1550,7 @@ def transformdate(datetime_str):
 
 
 
-
+import mysql.connector 
 
 @method_decorator(ensure_csrf_cookie, name='dispatch')
 class MainView(APIView):
@@ -1557,12 +1559,113 @@ class MainView(APIView):
 
 
 
-
-
+ 
+ 
 
     def get(self, request):
-      
-       
+      # connect clarin_annotations db
+        cnx = mysql.connector.connect(user='clarinel', password='FaRXgxC2mpVYhmqj',port=3306,host='127.0.0.1',database='clarin_annotations')
+        print(cnx)
+        if (cnx.is_connected()):
+                print("Connected")
+        else:
+                print("Not connected")
+
+        #get all data
+        cur = cnx.cursor()
+        
+        dbtables=["users","collections","documents","open_documents","button_annotators","coreference_annotators","shared_collections"]
+        for dbtable in dbtables:
+            print(dbtable)
+            query="SELECT * FROM " +dbtable
+            cur.execute(query)
+            res=cur.fetchall()
+            if (dbtable=="users"):
+                Users.objects.all().delete()
+                for x in res:
+                        if (x[7] is not None):
+                            if (x[8] is not None):
+                                 user=Users(pk=x[0],username=x[1],email=x[1],password="clarinbcrypt_sha256$"+x[2],permissions=x[3],last_login=x[4],
+                                 first_name=x[5],last_name=x[6],created_at=x[7],updated_at=x[8])
+                            else:
+                                user=Users(pk=x[0],username=x[1],email=x[1],password="clarinbcrypt_sha256$"+x[2],permissions=x[3],last_login=x[4],
+                                 first_name=x[5],last_name=x[6],created_at=x[7])
+                        else:
+                             if (x[8] is not None):
+                                 user=Users(pk=x[0],username=x[1],email=x[1],password="clarinbcrypt_sha256$"+x[2],permissions=x[3],last_login=x[4],
+                                 first_name=x[5],last_name=x[6],updated_at=x[8])
+                             else:
+                                 user=Users(pk=x[0],username=x[1],email=x[1],password="clarinbcrypt_sha256$"+x[2],permissions=x[3],last_login=x[4],
+                                 first_name=x[5],last_name=x[6])
+
+                        user.save()
+                continue
+            
+            if (dbtable=="collections"):
+                Collections.objects.all().delete()
+                for x in res:
+                    user=Users.objects.get(pk=x[2])
+                    collection=Collections(pk=x[0],name=x[1],owner_id=user,encoding=x[3],handler=x[4],created_at=x[5],updated_at=x[6])
+
+                    
+                    collection.save()   
+                continue
+            
+            if (dbtable=="documents"):
+                Documents.objects.all().delete()
+                for x in res:
+                     user = Users.objects.get(pk=x[12])
+                     collection=Collections.objects.get(pk=x[13])
+                     document=Documents(pk=x[0],name=x[1],type=x[2],text=x[3],data_text=x[4],data_binary=x[5],handler=x[6],visualisation_options=x[7],metadata=x[8],
+                     external_name=x[9],encoding=x[10],version=x[11],owner_id=user,collection_id=collection,updated_by=x[14],created_at=x[15],updated_at=x[16])
+                     document.save()
+                continue
+          
+            if (dbtable=="open_documents"):
+                OpenDocuments.objects.all().delete()
+                for x in res:
+                      collection = Collections.objects.get(pk=x[1])
+                      document = Documents.objects.get(pk=x[2])
+                      user = Users.objects.get(pk=x[0])
+                      open_document=OpenDocuments(user_id=user,collection_id=collection,document_id=document,annotator_type=x[3],db_interactions=x[4],created_at=x[5],updated_at=x[6],pk=x[7])
+                      open_document.save()
+                continue 
+              
+            if (dbtable=="button_annotators"):
+                ButtonAnnotators.objects.all().delete()
+                for x in res:
+                    user = Users.objects.get(pk=x[0])
+                    button_annotator=ButtonAnnotators(user_id=user,language=x[1],annotation_type=x[2],attribute=x[3],alternative=x[4],created_at=x[5],updated_at=x[6])
+                    button_annotator.save()
+                continue
+            if (dbtable=="coreference_annotators"):
+                CoreferenceAnnotators.objects.all().delete()
+                for x in res:
+                     user = Users.objects.get(pk=x[0])
+                     coreference_annotator = CoreferenceAnnotators(user_id=user, language=x[1],annotation_type=x[2],alternative=x[3],created_at=x[4],updated_at=x[5])
+                     coreference_annotator.save()
+                continue
+            if (dbtable=="shared_collections"):
+                SharedCollections.objects.all().delete()
+                for x in res:
+                     fuser = Users.objects.get(email=x[2])
+                     tuser=Users.objects.get(email=x[3])
+                     collection = Collections.objects.get(pk=x[1])
+                     shared_collection=SharedCollections(pk=x[0],collection_id=collection,fromfield=fuser,tofield=tuser,confirmation_code=x[4],confirmed=x[5],created_at=x[6],
+                     updated_at= x[7])
+                     shared_collection.save()
+                continue
+                
+           
+            
+        
+
+
+       # u=Users.objects.get(email="granna_93@yahoo.gr")
+       # print(u)
+        #u.password="clarinbcrypt_sha256$"+"$2y$10$nkX27HErNGLOyEJ1hiipjuDYXg9nHS8sorBOAruxE4q4u./8gRHL."
+        #u.save()
+        #$2y$10$RhIEgl5ocyav3VkF8jdMXeOC/gjHnJfkuLWAzv5PPadterA361q4S
         #  df = pd.read_csv('./clarin_backend/data/users.csv')
          # file="users" 
           #if(file=="users"):
@@ -1637,7 +1740,7 @@ class MainView(APIView):
                 # shared_collection=SharedCollections(pk=row["id"],collection_id=collection,fromfield=fuser,tofield=tuser,confirmation_code=row["confirmation_code"],confirmed=row["confirmed"],created_at=str2date(row["created_at"]),
                  #updated_at= str2date(row["updated_at"]))
                  #shared_collection.save()
-          return Response(data={"hello": "world"}, status=status.HTTP_200_OK) 
+        return Response(data={"hello": "world"}, status=status.HTTP_200_OK) 
        #
        #
        #                  #print(row)
